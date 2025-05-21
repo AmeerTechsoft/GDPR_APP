@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Compliance Dashboard" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{% trans "Compliance Dashboard" %}</h1>
+        <a href="{% url 'gdpr_platform:compliance_reports' %}" class="btn btn-primary">
+            <i class="bi bi-file-earmark-text"></i> {% trans "Generate Report" %}
+        </a>
+    </div>
+
+    <!-- Compliance Metrics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Compliance Score" %}</h6>
+                    <h2 class="card-title mb-0">{{ compliance_score }}%</h2>
+                    <small class="text-muted">{% trans "Overall compliance" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Data Requests" %}</h6>
+                    <h2 class="card-title mb-0">{{ pending_requests }}</h2>
+                    <small class="text-muted">{% trans "pending requests" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Policy Updates" %}</h6>
+                    <h2 class="card-title mb-0">{{ policy_updates }}</h2>
+                    <small class="text-muted">{% trans "in last 30 days" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Risk Level" %}</h6>
+                    <h2 class="card-title mb-0">{{ risk_level }}</h2>
+                    <small class="text-muted">{% trans "current assessment" %}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Status -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "Compliance Status" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>{% trans "Data Protection" %}</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ data_protection_score }}%" 
+                                     aria-valuenow="{{ data_protection_score }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ data_protection_score }}%
+                                </div>
+                            </div>
+                            
+                            <h6>{% trans "User Rights" %}</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ user_rights_score }}%" 
+                                     aria-valuenow="{{ user_rights_score }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ user_rights_score }}%
+                                </div>
+                            </div>
+                            
+                            <h6>{% trans "Documentation" %}</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ documentation_score }}%" 
+                                     aria-valuenow="{{ documentation_score }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ documentation_score }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>{% trans "Breach Management" %}</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ breach_management_score }}%" 
+                                     aria-valuenow="{{ breach_management_score }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ breach_management_score }}%
+                                </div>
+                            </div>
+                            
+                            <h6>{% trans "Third Party Compliance" %}</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ third_party_score }}%" 
+                                     aria-valuenow="{{ third_party_score }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ third_party_score }}%
+                                </div>
+                            </div>
+                            
+                            <h6>{% trans "Staff Training" %}</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ staff_training_score }}%" 
+                                     aria-valuenow="{{ staff_training_score }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ staff_training_score }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities and Tasks -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "Recent Activities" %}</h5>
+                    <a href="{% url 'gdpr_platform:activity_log' %}" class="btn btn-sm btn-link">{% trans "View All" %}</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Activity" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activities %}
+                                <tr>
+                                    <td>{{ activity.timestamp|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ activity.description }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ activity.status_class }}">
+                                            {{ activity.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">{% trans "No recent activities" %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "Pending Tasks" %}</h5>
+                    <a href="{% url 'gdpr_platform:data_requests' %}" class="btn btn-sm btn-link">{% trans "View All" %}</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Task" %}</th>
+                                    <th>{% trans "Due Date" %}</th>
+                                    <th>{% trans "Priority" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in pending_tasks %}
+                                <tr>
+                                    <td>{{ task.description }}</td>
+                                    <td>{{ task.due_date|date:"Y-m-d" }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ task.priority_class }}">
+                                            {{ task.priority }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">{% trans "No pending tasks" %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Refresh dashboard data every 5 minutes
+    setInterval(function() {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %} 

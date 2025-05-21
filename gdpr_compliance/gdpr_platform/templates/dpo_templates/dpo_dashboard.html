@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "DPO Dashboard" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{% trans "Data Protection Officer Dashboard" %}</h1>
+        <div>
+            <a href="{% url 'gdpr_platform:manage_breaches' %}" class="btn btn-warning me-2">
+                <i class="bi bi-shield-exclamation"></i> {% trans "Report Breach" %}
+            </a>
+            <a href="{% url 'gdpr_platform:compliance_reports' %}" class="btn btn-primary">
+                <i class="bi bi-file-earmark-text"></i> {% trans "Generate Report" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Active Breaches" %}</h6>
+                    <h2 class="card-title mb-0">{{ active_breaches }}</h2>
+                    <small class="text-muted">{% trans "requiring attention" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Data Transfers" %}</h6>
+                    <h2 class="card-title mb-0">{{ pending_transfers }}</h2>
+                    <small class="text-muted">{% trans "pending approval" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Processing Activities" %}</h6>
+                    <h2 class="card-title mb-0">{{ processing_activities }}</h2>
+                    <small class="text-muted">{% trans "active processes" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Risk Level" %}</h6>
+                    <h2 class="card-title mb-0">{{ risk_level }}</h2>
+                    <small class="text-muted">{% trans "current assessment" %}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Breaches -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "Recent Data Breaches" %}</h5>
+                    <a href="{% url 'gdpr_platform:manage_breaches' %}" class="btn btn-sm btn-link">{% trans "View All" %}</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Type" %}</th>
+                                    <th>{% trans "Affected Users" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                    <th>{% trans "Actions" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for breach in recent_breaches %}
+                                <tr>
+                                    <td>{{ breach.reported_date|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ breach.type }}</td>
+                                    <td>{{ breach.affected_users }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ breach.status_class }}">
+                                            {{ breach.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'gdpr_platform:breach_details' breach.id %}" class="btn btn-sm btn-outline-primary">
+                                            {% trans "View Details" %}
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">{% trans "No recent breaches" %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Activities and Data Transfers -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "Processing Activities" %}</h5>
+                    <a href="{% url 'gdpr_platform:processing_activities' %}" class="btn btn-sm btn-link">{% trans "View All" %}</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Process" %}</th>
+                                    <th>{% trans "Purpose" %}</th>
+                                    <th>{% trans "Data Categories" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in processing_activities_list %}
+                                <tr>
+                                    <td>{{ activity.name }}</td>
+                                    <td>{{ activity.purpose }}</td>
+                                    <td>{{ activity.data_categories }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ activity.status_class }}">
+                                            {{ activity.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">{% trans "No processing activities" %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "Pending Data Transfers" %}</h5>
+                    <a href="{% url 'gdpr_platform:cross_border_transfers' %}" class="btn btn-sm btn-link">{% trans "View All" %}</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Destination" %}</th>
+                                    <th>{% trans "Data Type" %}</th>
+                                    <th>{% trans "Transfer Date" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transfer in pending_transfers_list %}
+                                <tr>
+                                    <td>{{ transfer.destination }}</td>
+                                    <td>{{ transfer.data_type }}</td>
+                                    <td>{{ transfer.transfer_date|date:"Y-m-d" }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ transfer.status_class }}">
+                                            {{ transfer.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">{% trans "No pending transfers" %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Refresh dashboard data every 5 minutes
+    setInterval(function() {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %} 

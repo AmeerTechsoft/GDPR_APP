@@ -1,0 +1,624 @@
+/* GDPR Platform Custom Styles */
+
+/* Sidenav Styles */
+.sidenav {
+    background: white;
+    box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .15);
+}
+
+.sidenav .navbar-brand {
+    padding: 1rem 2rem;
+}
+
+.sidenav .nav-link {
+    margin: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: #67748e;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.sidenav .nav-link i {
+    font-size: 1rem;
+    margin-right: 0.75rem;
+    width: 1.5rem;
+    text-align: center;
+}
+
+.sidenav .nav-link.active {
+    background: linear-gradient(310deg, #7928CA 0%, #FF0080 100%);
+    color: white;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidenav .nav-link.active i,
+.sidenav .nav-link.active .nav-link-text {
+    color: white;
+}
+
+.sidenav .nav-link:hover:not(.active) {
+    background: rgba(121, 40, 202, 0.1);
+    color: #7928CA;
+}
+
+.sidenav .nav-link:hover:not(.active) i {
+    color: #7928CA;
+}
+
+.sidenav .nav-link-text {
+    font-size: 0.875rem;
+}
+
+/* Remove icon box styles */
+.sidenav .icon-shape {
+    background: none !important;
+    box-shadow: none !important;
+}
+
+.sidenav .icon-shape i {
+    position: static !important;
+    top: auto !important;
+}
+
+/* Hide unnecessary elements */
+.sidenav .icon-shape.icon-sm {
+    width: auto !important;
+    height: auto !important;
+}
+
+.sidenav .icon-shape.shadow {
+    box-shadow: none !important;
+}
+
+.sidenav .border-radius-md {
+    border-radius: 0 !important;
+}
+
+/* Ensure proper alignment */
+.sidenav .d-flex.align-items-center.justify-content-center {
+    display: inline !important;
+    justify-content: start !important;
+}
+
+/* Form Switch Styles */
+.form-check.form-switch {
+    padding-left: 0;
+    margin-left: auto;
+    min-width: 3.5rem;
+}
+
+.form-check.form-switch .form-check-input {
+    float: none;
+    margin-left: 0;
+    height: 1.5rem;
+    width: 3rem;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
+    background-position: left center;
+    border-radius: 2rem;
+    transition: all .2s ease-in-out;
+    border: 0;
+}
+
+.form-check.form-switch .form-check-input:checked {
+    background-color: #7928CA !important;
+    border-color: #7928CA !important;
+    background-position: right center;
+}
+
+.form-check.form-switch .form-check-input:not(:checked) {
+    background-color: #e9ecef !important;
+    border-color: #e9ecef !important;
+}
+
+/* Remove the pseudo-element that's causing the double switch */
+.form-check.form-switch .form-check-input:after {
+    content: none !important;
+}
+
+.form-check.form-switch .form-check-input:before {
+    content: none !important;
+}
+
+/* Fix for regular checkboxes */
+.form-check-input:checked {
+    background-color: #7928CA !important;
+    border-color: #7928CA !important;
+}
+
+/* Cookie Section Styles */
+.cookie-section {
+    padding: 1.5rem;
+    border-radius: 1rem;
+    background-color: #f8f9fa;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.cookie-section:hover {
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.cookie-section .form-check {
+    margin-bottom: 0;
+}
+
+/* Cookie Consent Page Specific */
+.cookie-preferences .card {
+    border: none;
+    box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .15);
+}
+
+.cookie-preferences .card-header {
+    background: transparent;
+    padding: 1.5rem;
+}
+
+.cookie-preferences .form-switch .form-check-input:checked {
+    background-color: #7928CA;
+    border-color: #7928CA;
+}
+
+.cookie-preferences .form-switch .form-check-input:not(:checked) {
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .sidenav {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .g-sidenav-pinned .sidenav {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+    }
+    
+    /* Improved mobile navigation */
+    .navbar-main {
+        padding: 0.5rem 1rem !important;
+    }
+    
+    .navbar-toggler {
+        margin-right: 0.5rem;
+    }
+    
+    /* Better card layouts on mobile */
+    .card {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Stack columns on mobile */
+    .row [class^="col-"] {
+        margin-bottom: 1rem;
+    }
+    
+    /* Adjust tables for mobile */
+    .table-responsive {
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    
+    /* Improve form elements on mobile */
+    .form-control, .form-select {
+        font-size: 16px; /* Prevents iOS zoom on input */
+    }
+    
+    /* Better button spacing */
+    .btn {
+        margin-bottom: 0.5rem;
+        margin-right: 0.5rem;
+    }
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.nav-item {
+    animation: slideIn 0.3s ease forwards;
+}
+
+/* Icon Styles */
+.icon-shape {
+    width: 32px;
+    height: 32px;
+    background-position: center;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-shape i {
+    font-size: 1rem;
+    color: #344767;
+}
+
+/* Enhanced Card Styles */
+.card {
+    border: none;
+    transition: all 0.2s ease;
+    border-radius: 1rem;
+    box-shadow: 0 0 1.5rem rgba(136, 152, 170, 0.1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1.5rem rgba(136, 152, 170, 0.2);
+}
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+.card-footer {
+    background-color: transparent;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.5rem;
+}
+
+/* Table Improvements */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #8392ab;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.table tbody td {
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+    border-top: none;
+    font-size: 0.875rem;
+    color: #344767;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* Button Improvements */
+.btn {
+    font-weight: 600;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease-in;
+}
+
+.btn-primary {
+    background-image: linear-gradient(310deg, #7928CA 0%, #FF0080 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background-position: right center;
+    box-shadow: 0 4px 10px rgba(121, 40, 202, 0.3);
+}
+
+/* Loading States */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    border-radius: inherit;
+}
+
+.loading-spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #7928CA;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    body.dark-mode {
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+    
+    body.dark-mode .card,
+    body.dark-mode .sidenav {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+    }
+    
+    body.dark-mode .card-header,
+    body.dark-mode .card-footer {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    body.dark-mode .table tbody tr {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    body.dark-mode .text-dark {
+        color: #e0e0e0 !important;
+    }
+    
+    body.dark-mode .bg-white {
+        background-color: #1e1e1e !important;
+    }
+    
+    body.dark-mode .text-secondary {
+        color: #adb5bd !important;
+    }
+    
+    /* Dark mode checkbox styles */
+    body.dark-mode .form-check-input:checked {
+        background-color: #7928CA !important;
+        border-color: #7928CA !important;
+    }
+}
+
+/* Accessibility Improvements */
+.btn:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(121, 40, 202, 0.25);
+    outline: none;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+    
+    .consent-history {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    
+    body {
+        font-size: 12pt;
+    }
+    
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+}
+
+/* Consent Dashboard */
+.consent-section {
+    border-radius: 1rem;
+    padding: 1.5rem;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.consent-section:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.consent-history {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Data Rights Dashboard */
+.data-request-card {
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.request-status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.request-status-badge.pending {
+    background-color: #FBD38D;
+    color: #744210;
+}
+
+.request-status-badge.processing {
+    background-color: #63B3ED;
+    color: #2A4365;
+}
+
+.request-status-badge.completed {
+    background-color: #48BB78;
+    color: #22543D;
+}
+
+.request-status-badge.rejected {
+    background-color: #F56565;
+    color: #742A2A;
+}
+
+/* Breach Notifications */
+.breach-notification {
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.breach-notification.severity-critical {
+    border-left-color: #F56565;
+}
+
+.breach-notification.severity-high {
+    border-left-color: #ED8936;
+}
+
+.breach-notification.severity-medium {
+    border-left-color: #ECC94B;
+}
+
+.breach-notification.severity-low {
+    border-left-color: #48BB78;
+}
+
+/* Data Processing Log */
+.processing-activity {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.processing-activity::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #E2E8F0;
+}
+
+.processing-activity::after {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #4A5568;
+    transform: translateY(-50%);
+}
+
+/* Form Enhancements */
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--bs-primary);
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+.form-switch .form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    cursor: pointer;
+}
+
+/* Fix for all form check inputs */
+.form-check-input:checked {
+    background-color: #7928CA !important;
+    border-color: #7928CA !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .consent-section {
+        padding: 1rem;
+    }
+
+    .data-request-card {
+        margin-bottom: 1rem;
+    }
+
+    .processing-activity {
+        padding-left: 1.5rem;
+    }
+}
+
+/* Cookie Section Content */
+.cookie-section-content {
+    flex: 1;
+    padding-right: 1rem;
+}
+
+.cookie-section-content h6 {
+    margin-bottom: 0.25rem;
+    color: #344767;
+}
+
+.cookie-section-content p {
+    margin-bottom: 0;
+    color: #67748e;
+}
+
+/* Cookie Section Layout */
+.cookie-section .d-flex {
+    gap: 1rem;
+}
+
+/* Necessary Cookie Switch */
+.form-check.form-switch .form-check-input:disabled {
+    opacity: 1;
+    background-color: #7928CA !important;
+    pointer-events: none;
+}

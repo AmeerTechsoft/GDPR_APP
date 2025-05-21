@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="fas fa-download me-2"></i>{% trans "Export Your Data" %}
+                    </h2>
+                    <p class="text-muted">
+                        {% trans "Download a copy of your personal data in your preferred format." %}
+                    </p>
+                    
+                    <div class="alert alert-info mb-4">
+                        <h5 class="alert-heading">{% trans "What's included in the export?" %}</h5>
+                        <p class="mb-0">{% trans "Select the categories of data you would like to export:" %}</p>
+                    </div>
+                    
+                    <form method="post" action="{% url 'gdpr_platform:data_export' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Data Categories -->
+                        <div class="mb-4">
+                            <h6>{% trans "Data Categories" %}</h6>
+                            {% for category in exportable_categories %}
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="category_{{ category.id }}" 
+                                       name="categories" value="{{ category.id }}" checked>
+                                <label class="form-check-label" for="category_{{ category.id }}">
+                                    <strong>{{ category.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ category.description }}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Export Format -->
+                        <div class="mb-4">
+                            <h6>{% trans "Export Format" %}</h6>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="format" id="format_json" 
+                                       value="json" checked>
+                                <label class="btn btn-outline-primary" for="format_json">
+                                    JSON
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="format" id="format_csv" 
+                                       value="csv">
+                                <label class="btn btn-outline-primary" for="format_csv">
+                                    CSV
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="format" id="format_xml" 
+                                       value="xml">
+                                <label class="btn btn-outline-primary" for="format_xml">
+                                    XML
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Previous Exports -->
+                        {% if previous_exports %}
+                        <div class="mb-4">
+                            <h6>{% trans "Previous Exports" %}</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Date" %}</th>
+                                            <th>{% trans "Format" %}</th>
+                                            <th>{% trans "Status" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for export in previous_exports %}
+                                        <tr>
+                                            <td>{{ export.request_date|date:"SHORT_DATETIME_FORMAT" }}</td>
+                                            <td>{{ export.file_format|upper }}</td>
+                                            <td>
+                                                {% if export.status == 'completed' %}
+                                                    <span class="badge bg-success">{{ export.status|title }}</span>
+                                                {% elif export.status == 'processing' %}
+                                                    <span class="badge bg-warning">{{ export.status|title }}</span>
+                                                {% elif export.status == 'failed' %}
+                                                    <span class="badge bg-danger">{{ export.status|title }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ export.status|title }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="confirmExport" required>
+                            <label class="form-check-label text-dark" for="confirmExport">
+                                {% trans "I confirm that I want to export my personal data" %}
+                            </label>
+                            <style>
+                                .form-check-input {
+                                    border: 1px solid #adb5bd;
+                                    background-color: #fff;
+                                }
+                                .form-check-input:checked {
+                                    background-color: #0d6efd;
+                                    border-color: #0d6efd;
+                                }
+                            </style>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="exportButton" disabled>
+                            <i class="fas fa-download me-2"></i>{% trans "Export Data" %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheckbox = document.getElementById('confirmExport');
+    const exportButton = document.getElementById('exportButton');
+    const categoryCheckboxes = document.querySelectorAll('input[name="categories"]');
+    
+    // Function to check if any categories are selected
+    function hasSelectedCategories() {
+        return Array.from(categoryCheckboxes).some(checkbox => checkbox.checked);
+    }
+    
+    // Function to update button state
+    function updateButtonState() {
+        exportButton.disabled = !confirmCheckbox.checked || !hasSelectedCategories();
+    }
+    
+    // Add event listeners
+    confirmCheckbox.addEventListener('change', updateButtonState);
+    
+    categoryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (!hasSelectedCategories()) {
+                confirmCheckbox.checked = false;
+                alert("{% trans 'Please select at least one data category to export.' %}");
+            }
+            updateButtonState();
+        });
+    });
+    
+    // Handle form submission
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!hasSelectedCategories()) {
+            e.preventDefault();
+            alert("{% trans 'Please select at least one data category to export.' %}");
+            return false;
+        }
+        return true;
+    });
+    
+    // Initial button state
+    updateButtonState();
+});
+</script>
+{% endblock %} 

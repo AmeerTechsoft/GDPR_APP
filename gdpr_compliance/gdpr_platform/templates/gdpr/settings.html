@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="fas fa-cog me-2"></i>{% trans "Account Settings" %}
+                    </h2>
+                    <p class="text-muted">
+                        {% trans "Manage your account settings and preferences." %}
+                    </p>
+                    
+                    <form method="post" action="{% url 'gdpr_platform:settings' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information -->
+                        <div class="mb-4">
+                            <h5>{% trans "Personal Information" %}</h5>
+                            
+                            <div class="mb-3">
+                                <label for="firstName" class="form-label">{% trans "First Name" %}</label>
+                                <input type="text" class="form-control" id="firstName" name="first_name"
+                                       value="{{ request.user.first_name }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="lastName" class="form-label">{% trans "Last Name" %}</label>
+                                <input type="text" class="form-control" id="lastName" name="last_name"
+                                       value="{{ request.user.last_name }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">{% trans "Email Address" %}</label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                       value="{{ request.user.email }}" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Security Settings -->
+                        <div class="mb-4">
+                            <h5>{% trans "Security" %}</h5>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'gdpr_platform:setup_2fa' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-shield-alt me-2"></i>{% trans "Configure Two-Factor Authentication" %}
+                                </a>
+                                
+                                <a href="{% url 'gdpr_platform:trusted_devices' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-laptop me-2"></i>{% trans "Manage Trusted Devices" %}
+                                </a>
+                                
+                                <a href="{% url 'gdpr_platform:activity_log' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-history me-2"></i>{% trans "View Activity Log" %}
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Privacy Settings -->
+                        <div class="mb-4">
+                            <h5>{% trans "Privacy" %}</h5>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'gdpr_platform:privacy_settings' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-user-shield me-2"></i>{% trans "Privacy Settings" %}
+                                </a>
+                                
+                                <a href="{% url 'gdpr_platform:data_export' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-download me-2"></i>{% trans "Export Your Data" %}
+                                </a>
+                                
+                                <a href="{% url 'gdpr_platform:data_deletion' %}" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash me-2"></i>{% trans "Request Account Deletion" %}
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>{% trans "Save Changes" %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Cross-border Transfers" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{% trans "Cross-border Transfers" %}</h1>
+        <div>
+            <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="bi bi-download"></i> {% trans "Export Report" %}
+            </button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTransferModal">
+                <i class="bi bi-plus-circle"></i> {% trans "New Transfer" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Active Transfers" %}</h6>
+                    <h2 class="card-title mb-0">{{ active_transfers }}</h2>
+                    <small class="text-muted">{% trans "in progress" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Pending Approval" %}</h6>
+                    <h2 class="card-title mb-0">{{ pending_transfers }}</h2>
+                    <small class="text-muted">{% trans "awaiting review" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Countries" %}</h6>
+                    <h2 class="card-title mb-0">{{ recipient_countries }}</h2>
+                    <small class="text-muted">{% trans "receiving data" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Risk Score" %}</h6>
+                    <h2 class="card-title mb-0">{{ risk_score }}%</h2>
+                    <small class="text-muted">{% trans "average risk" %}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="country" class="form-label">{% trans "Recipient Country" %}</label>
+                    <select class="form-select" id="country" name="country">
+                        <option value="">{% trans "All Countries" %}</option>
+                        {% for country in countries %}
+                        <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>
+                            {{ country }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="mechanism" class="form-label">{% trans "Transfer Mechanism" %}</label>
+                    <select class="form-select" id="mechanism" name="mechanism">
+                        <option value="">{% trans "All Mechanisms" %}</option>
+                        {% for mech in mechanisms %}
+                        <option value="{{ mech.0 }}" {% if mech.0 == selected_mechanism %}selected{% endif %}>
+                            {{ mech.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">{% trans "Status" %}</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">{% trans "All Status" %}</option>
+                        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
+                        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>{% trans "Pending" %}</option>
+                        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>{% trans "Completed" %}</option>
+                        <option value="suspended" {% if selected_status == 'suspended' %}selected{% endif %}>{% trans "Suspended" %}</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_range" class="form-label">{% trans "Date Range" %}</label>
+                    <select class="form-select" id="date_range" name="date_range">
+                        <option value="7" {% if selected_range == '7' %}selected{% endif %}>{% trans "Last 7 days" %}</option>
+                        <option value="30" {% if selected_range == '30' %}selected{% endif %}>{% trans "Last 30 days" %}</option>
+                        <option value="90" {% if selected_range == '90' %}selected{% endif %}>{% trans "Last 90 days" %}</option>
+                        <option value="all" {% if selected_range == 'all' %}selected{% endif %}>{% trans "All time" %}</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">{% trans "Apply Filters" %}</button>
+                    <a href="{% url 'gdpr_platform:cross_border_transfers' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Transfers List -->
+    <div class="card">
+        <div class="card-body">
+                        <div class="table-responsive">
+                <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                            <th>{% trans "ID" %}</th>
+                            <th>{% trans "Recipient Country" %}</th>
+                            <th>{% trans "Organization" %}</th>
+                            <th>{% trans "Mechanism" %}</th>
+                                        <th>{% trans "Data Categories" %}</th>
+                                        <th>{% trans "Transfer Date" %}</th>
+                                        <th>{% trans "Status" %}</th>
+                            <th>{% trans "Actions" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transfer in transfers %}
+                                    <tr>
+                            <td>{{ transfer.id }}</td>
+                            <td>{{ transfer.recipient_country }}</td>
+                                        <td>{{ transfer.recipient_organization }}</td>
+                            <td>{{ transfer.get_transfer_mechanism_display }}</td>
+                            <td>
+                                {% for category in transfer.data_categories %}
+                                <span class="badge bg-info">{{ category }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ transfer.transfer_date|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="badge bg-{{ transfer.status_class }}">
+                                                {{ transfer.get_status_display }}
+                                            </span>
+                                        </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#viewTransferModal"
+                                        data-transfer-id="{{ transfer.id }}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#updateStatusModal"
+                                        data-transfer-id="{{ transfer.id }}">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">{% trans "No transfers found" %}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+            <!-- Pagination -->
+            {% if transfers.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if transfers.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transfers.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {% trans "Previous" %}
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in transfers.paginator.page_range %}
+                    <li class="page-item {% if transfers.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    {% if transfers.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transfers.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {% trans "Next" %}
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- View Transfer Modal -->
+<div class="modal fade" id="viewTransferModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Transfer Details" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="transferDetails">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Close" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Transfer Modal -->
+<div class="modal fade" id="addTransferModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "New Cross-border Transfer" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addTransferForm">
+                    <div class="mb-3">
+                        <label for="recipient_country" class="form-label">{% trans "Recipient Country" %}</label>
+                        <input type="text" class="form-control" id="recipient_country" name="recipient_country" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="recipient_organization" class="form-label">{% trans "Recipient Organization" %}</label>
+                        <input type="text" class="form-control" id="recipient_organization" name="recipient_organization" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transfer_mechanism" class="form-label">{% trans "Transfer Mechanism" %}</label>
+                        <select class="form-select" id="transfer_mechanism" name="transfer_mechanism" required>
+                            {% for mech in mechanisms %}
+                            <option value="{{ mech.0 }}">{{ mech.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="data_categories" class="form-label">{% trans "Data Categories" %}</label>
+                        <select class="form-select" id="data_categories" name="data_categories" multiple required>
+                            {% for category in data_categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="safeguards" class="form-label">{% trans "Safeguards" %}</label>
+                        <textarea class="form-control" id="safeguards" name="safeguards" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transfer_date" class="form-label">{% trans "Transfer Date" %}</label>
+                        <input type="date" class="form-control" id="transfer_date" name="transfer_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="expiry_date" class="form-label">{% trans "Expiry Date" %}</label>
+                        <input type="date" class="form-control" id="expiry_date" name="expiry_date">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-primary" id="saveTransfer">{% trans "Save Transfer" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Update Transfer Status" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateStatusForm">
+                    <div class="mb-3">
+                        <label for="new_status" class="form-label">{% trans "New Status" %}</label>
+                        <select class="form-select" id="new_status" name="new_status" required>
+                            <option value="active">{% trans "Active" %}</option>
+                            <option value="pending">{% trans "Pending" %}</option>
+                            <option value="completed">{% trans "Completed" %}</option>
+                            <option value="suspended">{% trans "Suspended" %}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">{% trans "Notes" %}</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-primary" id="updateStatus">{% trans "Update" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Export Transfers Report" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm">
+                    <div class="mb-3">
+                        <label for="export_format" class="form-label">{% trans "Format" %}</label>
+                        <select class="form-select" id="export_format" name="format" required>
+                            <option value="csv">CSV</option>
+                            <option value="pdf">PDF</option>
+                            <option value="xlsx">Excel</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_range" class="form-label">{% trans "Date Range" %}</label>
+                        <select class="form-select" id="date_range" name="date_range" required>
+                            <option value="7">{% trans "Last 7 days" %}</option>
+                            <option value="30">{% trans "Last 30 days" %}</option>
+                            <option value="90">{% trans "Last 90 days" %}</option>
+                            <option value="all">{% trans "All time" %}</option>
+                        </select>
+                </div>
+                </form>
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-primary" id="exportReport">{% trans "Export" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Handle transfer details view
+    $('#viewTransferModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        const transferId = button.data('transfer-id');
+        
+        fetch(`/api/transfers/${transferId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const details = $('#transferDetails');
+                details.html(`
+                    <dl class="row">
+                        <dt class="col-sm-4">{% trans "Recipient Country" %}</dt>
+                        <dd class="col-sm-8">${data.recipient_country}</dd>
+                        
+                        <dt class="col-sm-4">{% trans "Organization" %}</dt>
+                        <dd class="col-sm-8">${data.recipient_organization}</dd>
+                        
+                        <dt class="col-sm-4">{% trans "Mechanism" %}</dt>
+                        <dd class="col-sm-8">${data.transfer_mechanism_display}</dd>
+                        
+                        <dt class="col-sm-4">{% trans "Data Categories" %}</dt>
+                        <dd class="col-sm-8">
+                            ${data.data_categories.map(cat => 
+                                `<span class="badge bg-info me-1">${cat}</span>`
+                            ).join('')}
+                        </dd>
+                        
+                        <dt class="col-sm-4">{% trans "Safeguards" %}</dt>
+                        <dd class="col-sm-8">${data.safeguards}</dd>
+                        
+                        <dt class="col-sm-4">{% trans "Transfer Date" %}</dt>
+                        <dd class="col-sm-8">${data.transfer_date}</dd>
+                        
+                        <dt class="col-sm-4">{% trans "Expiry Date" %}</dt>
+                        <dd class="col-sm-8">${data.expiry_date || '---'}</dd>
+                        
+                        <dt class="col-sm-4">{% trans "Status" %}</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-${data.status_class}">${data.status_display}</span>
+                        </dd>
+                    </dl>
+                `);
+            });
+    });
+
+    // Handle status update
+    let transferToUpdate = null;
+    
+    $('#updateStatusModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        transferToUpdate = button.data('transfer-id');
+    });
+    
+    $('#updateStatus').on('click', function() {
+        if (transferToUpdate) {
+            const form = $('#updateStatusForm');
+            fetch(`/api/transfers/${transferToUpdate}/status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    status: form.find('[name=new_status]').val(),
+                    notes: form.find('[name=notes]').val()
+                })
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+        }
+    });
+
+    // Handle new transfer
+    $('#saveTransfer').on('click', function() {
+        const form = $('#addTransferForm');
+        const formData = new FormData(form[0]);
+        
+        fetch('/api/transfers/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    });
+
+    // Handle export
+    $('#exportReport').on('click', function() {
+        const form = $('#exportForm');
+        const queryParams = new URLSearchParams({
+            format: form.find('[name=format]').val(),
+            date_range: form.find('[name=date_range]').val()
+        });
+        
+        window.location.href = `/api/transfers/export/?${queryParams}`;
+    });
+</script>
+{% endblock %} 

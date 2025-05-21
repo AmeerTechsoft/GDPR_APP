@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Trusted Devices" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="h3 mb-4">{% trans "Trusted Devices" %}</h1>
+
+                    <!-- Current Device -->
+                    <div class="alert alert-info mb-4">
+                        <h5 class="alert-heading">{% trans "Current Device" %}</h5>
+                    <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <p class="mb-1">{{ current_device.user_agent }}</p>
+                                <small class="text-muted">
+                                    IP: {{ current_device.ip_address }} |
+                                    {% trans "Last Used" %}: {{ current_device.last_used|date:"SHORT_DATETIME_FORMAT" }}
+                                </small>
+                            </div>
+                            <div class="ms-3">
+                                <span class="badge bg-success">{% trans "Active" %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trusted Devices List -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{% trans "Trusted Devices" %}</h5>
+                            <span class="badge bg-secondary">{{ trusted_devices|length }} {% trans "devices" %}</span>
+                        </div>
+                        <div class="list-group list-group-flush">
+                                {% for device in trusted_devices %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ device.device_name|default:device.browser_name }}</h6>
+                                            <p class="mb-1 text-muted small">{{ device.user_agent }}</p>
+                                            <small class="text-muted">
+                                                IP: {{ device.ip_address }} |
+                                                {% trans "Last Used" %}: {{ device.last_used|date:"SHORT_DATETIME_FORMAT" }}
+                                            </small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            {% if device.is_current %}
+                                                <span class="badge bg-success me-2">{% trans "Current" %}</span>
+                                            {% endif %}
+                                            <form method="post" action="{% url 'gdpr_platform:remove_trusted_device' device.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="return confirm('{% trans "Are you sure you want to remove this device?" %}')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="list-group-item text-center text-muted py-4">
+                                    {% trans "No trusted devices found" %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Active Sessions -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{% trans "Active Sessions" %}</h5>
+                            <span class="badge bg-secondary">{{ active_sessions|length }} {% trans "sessions" %}</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Device" %}</th>
+                                        <th>{% trans "Location" %}</th>
+                                        <th>{% trans "Last Activity" %}</th>
+                                        <th>{% trans "Actions" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for session in active_sessions %}
+                                        <tr>
+                                            <td>
+                                                <div>{{ session.browser_name }}</div>
+                                                <small class="text-muted">{{ session.user_agent }}</small>
+                                            </td>
+                                            <td>
+                                                <div>{{ session.location|default:"-" }}</div>
+                                                <small class="text-muted">{{ session.ip_address }}</small>
+                                            </td>
+                                            <td>
+                                                <div>{{ session.last_activity|date:"SHORT_DATETIME_FORMAT" }}</div>
+                                                <small class="text-muted">
+                                                    {% if session.is_current %}
+                                                        {% trans "Current session" %}
+                                                    {% else %}
+                                                        {{ session.last_activity|timesince }} {% trans "ago" %}
+                                                    {% endif %}
+                                                </small>
+                                    </td>
+                                    <td>
+                                                {% if session.is_current %}
+                                                    <span class="badge bg-success">{% trans "Current" %}</span>
+                                                {% else %}
+                                                    <form method="post" action="{% url 'gdpr_platform:terminate_session' session.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                                onclick="return confirm('{% trans "Are you sure you want to terminate this session?" %}')">
+                                                            {% trans "Terminate" %}
+                                            </button>
+                                        </form>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">
+                                                {% trans "No active sessions found" %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                </div>
+            </div>
+
+                    <!-- Security Tips -->
+                    <div class="alert alert-warning mt-4" role="alert">
+                        <h5 class="alert-heading">{% trans "Security Tips" %}</h5>
+                        <ul class="mb-0">
+                            <li>{% trans "Only trust devices that you use regularly and are secure." %}</li>
+                            <li>{% trans "Remove devices that you no longer use or recognize." %}</li>
+                            <li>{% trans "Terminate any sessions that you don't recognize." %}</li>
+                            <li>{% trans "If you notice any suspicious activity, change your password immediately." %}</li>
+                        </ul>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

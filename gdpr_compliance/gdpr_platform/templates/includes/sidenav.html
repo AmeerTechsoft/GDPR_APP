@@ -1,0 +1,312 @@
+{% load static %}
+{% load i18n %}
+
+<!-- Sidenav -->
+<link rel="stylesheet" href="{% static 'gdpr_platform/css/sidenav.css' %}">
+
+<aside class="sidenav navbar navbar-vertical navbar-expand-xl border-0 border-radius-xl my-3 fixed-start ms-3" id="sidenav-main">
+    <!-- Debug info -->
+    <div style="display: none;">
+        <p>Staff: {{ request.user.is_staff }}</p>
+        <p>Roles: {{ request.user.roles.all }}</p>
+    </div>
+
+    <div class="sidenav-header">
+        <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-xl-none" aria-hidden="true" id="iconSidenav"></i>
+        <a class="navbar-brand m-0" href="{% url 'gdpr_platform:dashboard' %}">
+            <img src="{% static 'gdpr_platform/img/logo.png' %}" class="navbar-brand-img" alt="GDPR Platform">
+            <span class="ms-2 font-weight-bold">GDPR Platform</span>
+        </a>
+    </div>
+    
+    <hr class="horizontal dark mt-0">
+    
+    <div class="collapse navbar-collapse w-auto h-auto" id="sidenav-collapse-main">
+        <ul class="navbar-nav">
+            <!-- Common Dashboard for all users -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                   href="{% url 'gdpr_platform:dashboard' %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="nav-link-text">{% trans "Dashboard" %}</span>
+                </a>
+            </li>
+
+            {% with user_roles=request.user.roles.all %}
+            <!-- Regular User Section - Show only if user has no special roles -->
+            {% if not request.user.is_staff and not user_roles %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'data_' in request.resolver_match.url_name or 'privacy' in request.resolver_match.url_name or 'cookie' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="#" data-bs-toggle="collapse" data-bs-target="#userDataRightsCollapse" 
+                   aria-expanded="{% if 'data_' in request.resolver_match.url_name or 'privacy' in request.resolver_match.url_name or 'cookie' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="fas fa-user-shield"></i>
+                    <span class="nav-link-text">{% trans "Data Rights" %}</span>
+                </a>
+                <div class="collapse {% if 'data_' in request.resolver_match.url_name or 'privacy' in request.resolver_match.url_name or 'cookie' in request.resolver_match.url_name %}show{% endif %}" id="userDataRightsCollapse">
+                    <ul class="nav ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'data_export' %}active{% endif %}" href="{% url 'gdpr_platform:data_export' %}">
+                                <i class="fas fa-download"></i>
+                                <span class="nav-link-text">{% trans "Export My Data" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'data_rectification' %}active{% endif %}" href="{% url 'gdpr_platform:data_rectification' %}">
+                                <i class="fas fa-edit"></i>
+                                <span class="nav-link-text">{% trans "Update My Data" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'data_deletion' %}active{% endif %}" href="{% url 'gdpr_platform:data_deletion' %}">
+                                <i class="fas fa-trash"></i>
+                                <span class="nav-link-text">{% trans "Request Deletion" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'privacy_settings' %}active{% endif %}" href="{% url 'gdpr_platform:privacy_settings' %}">
+                                <i class="fas fa-user-lock"></i>
+                                <span class="nav-link-text">{% trans "Privacy Settings" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'update_cookie_consent' %}active{% endif %}" href="{% url 'gdpr_platform:update_cookie_consent' %}">
+                                <i class="fas fa-cookie"></i>
+                                <span class="nav-link-text">{% trans "Cookie Settings" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'activity_log' %}active{% endif %}" href="{% url 'gdpr_platform:activity_log' %}">
+                                <i class="fas fa-history"></i>
+                                <span class="nav-link-text">{% trans "Activity Log" %}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            {% endif %}
+
+            <!-- Admin Section -->
+            {% if request.user.is_staff or 'admin' in user_roles|stringformat:"s" %}
+            <li class="nav-item admin-section">
+                <a class="nav-link {% if 'admin_' in request.resolver_match.url_name or 'compliance_dashboard' in request.resolver_match.url_name or 'user_management' in request.resolver_match.url_name or 'system_settings' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="#" data-bs-toggle="collapse" data-bs-target="#adminCollapse"
+                   aria-expanded="{% if 'admin_' in request.resolver_match.url_name or 'compliance_dashboard' in request.resolver_match.url_name or 'user_management' in request.resolver_match.url_name or 'system_settings' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="fas fa-cog"></i>
+                    <span class="nav-link-text">{% trans "Administration" %}</span>
+                </a>
+                <div class="collapse {% if 'admin_' in request.resolver_match.url_name or 'compliance_dashboard' in request.resolver_match.url_name or 'user_management' in request.resolver_match.url_name or 'system_settings' in request.resolver_match.url_name %}show{% endif %}" id="adminCollapse">
+                    <ul class="nav ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" href="{% url 'gdpr_platform:admin_dashboard' %}">
+                                <i class="fas fa-chart-bar"></i>
+                                <span class="nav-link-text">{% trans "Admin Dashboard" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'compliance_dashboard' %}active{% endif %}" href="{% url 'gdpr_platform:compliance_dashboard' %}">
+                                <i class="fas fa-shield-alt"></i>
+                                <span class="nav-link-text">{% trans "GDPR Dashboard" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'user_management' %}active{% endif %}" href="{% url 'gdpr_platform:user_management' %}">
+                                <i class="fas fa-users"></i>
+                                <span class="nav-link-text">{% trans "User Management" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'system_settings' %}active{% endif %}" href="{% url 'gdpr_platform:system_settings' %}">
+                                <i class="fas fa-wrench"></i>
+                                <span class="nav-link-text">{% trans "System Settings" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'compliance_reports' %}active{% endif %}" href="{% url 'gdpr_platform:compliance_reports' %}">
+                                <i class="fas fa-file-alt"></i>
+                                <span class="nav-link-text">{% trans "Compliance Reports" %}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            {% endif %}
+
+            <!-- DPO Section -->
+            {% if 'dpo' in user_roles|stringformat:"s" %}
+            <li class="nav-item dpo-section">
+                <a class="nav-link {% if 'dpo_' in request.resolver_match.url_name or 'breach_' in request.resolver_match.url_name or 'data_processing' in request.resolver_match.url_name or 'processing_activities' in request.resolver_match.url_name or 'cross_border' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="#" data-bs-toggle="collapse" data-bs-target="#dpoCollapse"
+                   aria-expanded="{% if 'dpo_' in request.resolver_match.url_name or 'breach_' in request.resolver_match.url_name or 'data_processing' in request.resolver_match.url_name or 'processing_activities' in request.resolver_match.url_name or 'cross_border' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="fas fa-shield-alt"></i>
+                    <span class="nav-link-text">{% trans "DPO Management" %}</span>
+                </a>
+                <div class="collapse {% if 'dpo_' in request.resolver_match.url_name or 'breach_' in request.resolver_match.url_name or 'data_processing' in request.resolver_match.url_name or 'processing_activities' in request.resolver_match.url_name or 'cross_border' in request.resolver_match.url_name %}show{% endif %}" id="dpoCollapse">
+                    <ul class="nav ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dpo_dashboard' %}active{% endif %}" href="{% url 'gdpr_platform:dpo_dashboard' %}">
+                                <i class="fas fa-chart-line"></i>
+                                <span class="nav-link-text">{% trans "DPO Dashboard" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'breach_notifications' %}active{% endif %}" href="{% url 'gdpr_platform:breach_notifications' %}">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span class="nav-link-text">{% trans "Breach Notifications" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'data_processing' %}active{% endif %}" href="{% url 'gdpr_platform:data_processing' %}">
+                                <i class="fas fa-tasks"></i>
+                                <span class="nav-link-text">{% trans "Data Processing" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'processing_activities' %}active{% endif %}" href="{% url 'gdpr_platform:processing_activities' %}">
+                                <i class="fas fa-list-alt"></i>
+                                <span class="nav-link-text">{% trans "Processing Activities" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'cross_border_transfers' %}active{% endif %}" href="{% url 'gdpr_platform:cross_border_transfers' %}">
+                                <i class="fas fa-globe"></i>
+                                <span class="nav-link-text">{% trans "Cross-border Transfers" %}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            {% endif %}
+
+            <!-- Compliance Officer Section -->
+            {% if 'compliance_officer' in user_roles|stringformat:"s" %}
+            <li class="nav-item compliance-section">
+                <a class="nav-link {% if 'compliance_' in request.resolver_match.url_name or 'data_requests' in request.resolver_match.url_name or 'processing_' in request.resolver_match.url_name or 'manage_breaches' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="#" data-bs-toggle="collapse" data-bs-target="#complianceCollapse"
+                   aria-expanded="{% if 'compliance_' in request.resolver_match.url_name or 'data_requests' in request.resolver_match.url_name or 'processing_' in request.resolver_match.url_name or 'manage_breaches' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span class="nav-link-text">{% trans "Compliance Management" %}</span>
+                </a>
+                <div class="collapse {% if 'compliance_' in request.resolver_match.url_name or 'data_requests' in request.resolver_match.url_name or 'processing_' in request.resolver_match.url_name or 'manage_breaches' in request.resolver_match.url_name %}show{% endif %}" id="complianceCollapse">
+                    <ul class="nav ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'compliance_dashboard' %}active{% endif %}" href="{% url 'gdpr_platform:compliance_dashboard' %}">
+                                <i class="fas fa-chart-pie"></i>
+                                <span class="nav-link-text">{% trans "Compliance Dashboard" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'data_requests' %}active{% endif %}" href="{% url 'gdpr_platform:data_requests' %}">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span class="nav-link-text">{% trans "Data Requests Overview" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'processing_overview' %}active{% endif %}" href="{% url 'gdpr_platform:processing_overview' %}">
+                                <i class="fas fa-database"></i>
+                                <span class="nav-link-text">{% trans "Processing Overview" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'processing_activities' %}active{% endif %}" href="{% url 'gdpr_platform:processing_activities' %}">
+                                <i class="fas fa-tasks"></i>
+                                <span class="nav-link-text">{% trans "Processing Activities" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manage_breaches' %}active{% endif %}" href="{% url 'gdpr_platform:manage_breaches' %}">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span class="nav-link-text">{% trans "Manage Breaches" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'activity_log' %}active{% endif %}" href="{% url 'gdpr_platform:activity_log' %}">
+                                <i class="fas fa-history"></i>
+                                <span class="nav-link-text">{% trans "Activity Log" %}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Common Sections for all users -->
+            <li class="nav-item">
+                <a class="nav-link {% if 'security' in request.resolver_match.url_name or '2fa' in request.resolver_match.url_name or 'trusted_devices' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="#" data-bs-toggle="collapse" data-bs-target="#securityCollapse"
+                   aria-expanded="{% if 'security' in request.resolver_match.url_name or '2fa' in request.resolver_match.url_name or 'trusted_devices' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+                    <i class="fas fa-lock"></i>
+                    <span class="nav-link-text">{% trans "Security" %}</span>
+                </a>
+                <div class="collapse {% if 'security' in request.resolver_match.url_name or '2fa' in request.resolver_match.url_name or 'trusted_devices' in request.resolver_match.url_name %}show{% endif %}" id="securityCollapse">
+                    <ul class="nav ms-4">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'security_dashboard' %}active{% endif %}" href="{% url 'gdpr_platform:security_dashboard' %}">
+                                <i class="fas fa-shield-alt"></i>
+                                <span class="nav-link-text">{% trans "Security Overview" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'setup_2fa' %}active{% endif %}" href="{% url 'gdpr_platform:setup_2fa' %}">
+                                <i class="fas fa-key"></i>
+                                <span class="nav-link-text">{% trans "Two-Factor Auth" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'trusted_devices' %}active{% endif %}" href="{% url 'gdpr_platform:trusted_devices' %}">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span class="nav-link-text">{% trans "Trusted Devices" %}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'update_cookie_consent' %}active{% endif %}" href="{% url 'gdpr_platform:update_cookie_consent' %}">
+                                <i class="fas fa-cookie"></i>
+                                <span class="nav-link-text">{% trans "Cookie Settings" %}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'gdpr_platform:settings' %}">
+                    <i class="fas fa-user-cog"></i>
+                    <span class="nav-link-text">{% trans "Settings" %}</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</aside>
+
+<!-- Sidenav Backdrop -->
+<div class="sidenav-backdrop" id="sidenavBackdrop"></div>
+
+<!-- Sidenav Toggle Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const iconSidenav = document.getElementById('iconSidenav');
+    const sidenav = document.getElementById('sidenav-main');
+    const backdrop = document.getElementById('sidenavBackdrop');
+    
+    // Initialize Bootstrap collapse elements
+    var collapseElements = document.querySelectorAll('.collapse');
+    collapseElements.forEach(function(collapseEl) {
+        if (collapseEl.classList.contains('show')) {
+            collapseEl.previousElementSibling.setAttribute('aria-expanded', 'true');
+        }
+    });
+
+    if (iconSidenav) {
+        iconSidenav.addEventListener('click', toggleSidenav);
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener('click', toggleSidenav);
+    }
+
+    function toggleSidenav() {
+        sidenav.classList.toggle('show');
+        backdrop.classList.toggle('show');
+    }
+});
+</script> 

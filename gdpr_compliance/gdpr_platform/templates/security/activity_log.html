@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Activity Log - GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Account Activity Log</h2>
+                <a href="{% url 'gdpr_platform:security_dashboard' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Security Dashboard
+                </a>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="activity_type" class="form-label">Activity Type</label>
+                            <select class="form-select" id="activity_type" name="activity_type">
+                                <option value="">All Activities</option>
+                                <option value="login" {% if request.GET.activity_type == 'login' %}selected{% endif %}>Login Attempts</option>
+                                <option value="password" {% if request.GET.activity_type == 'password' %}selected{% endif %}>Password Changes</option>
+                                <option value="2fa" {% if request.GET.activity_type == '2fa' %}selected{% endif %}>2FA Changes</option>
+                                <option value="security" {% if request.GET.activity_type == 'security' %}selected{% endif %}>Security Settings</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="date_from" class="form-label">Date From</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" 
+                                   value="{{ request.GET.date_from }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="date_to" class="form-label">Date To</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to"
+                                   value="{{ request.GET.date_to }}">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <a href="{% url 'gdpr_platform:activity_log' %}" class="btn btn-outline-secondary">Clear Filters</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Activity List -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                    <th>IP Address</th>
+                                    <th>Device/Browser</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in activity_list %}
+                                <tr>
+                                    <td>{{ activity.timestamp }}</td>
+                                    <td>
+                                        <span class="badge {% if activity.action_type == 'login' %}bg-primary
+                                                         {% elif activity.action_type == 'password' %}bg-warning
+                                                         {% elif activity.action_type == '2fa' %}bg-info
+                                                         {% else %}bg-secondary{% endif %} me-2">
+                                            {{ activity.action_type }}
+                                        </span>
+                                        {{ activity.action }}
+                                    </td>
+                                    <td>{{ activity.ip_address }}</td>
+                                    <td>{{ activity.user_agent }}</td>
+                                    <td>
+                                        <span class="badge {% if activity.status == 'success' %}bg-success
+                                                         {% elif activity.status == 'failed' %}bg-danger
+                                                         {% else %}bg-secondary{% endif %}">
+                                            {{ activity.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        No activity records found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if activity_list.has_other_pages %}
+                    <nav aria-label="Activity log pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if activity_list.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ activity_list.previous_page_number }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in activity_list.paginator.page_range %}
+                            <li class="page-item {% if activity_list.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+
+                            {% if activity_list.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ activity_list.next_page_number }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

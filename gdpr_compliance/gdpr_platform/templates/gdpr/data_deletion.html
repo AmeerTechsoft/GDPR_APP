@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>{% trans "Request Data Deletion" %}
+                    </h2>
+                    <p class="text-muted">
+                        {% trans "Request the deletion of your personal data and account." %}
+                    </p>
+                    
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">{% trans "Important Information" %}</h5>
+                        <p>{% trans "Please read carefully before proceeding:" %}</p>
+                        <ul class="mb-0">
+                            <li>{% trans "This action cannot be undone." %}</li>
+                            <li>{% trans "All your personal data will be permanently deleted after the retention period." %}</li>
+                            <li>{% trans "You will lose access to all services immediately." %}</li>
+                            <li>{% trans "Any active subscriptions will be cancelled." %}</li>
+                            <li>{% trans "Data required for legal compliance may be retained." %}</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="post" action="{% url 'gdpr_platform:data_deletion' %}" id="dataDeletionForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">{% trans "Reason for Deletion (Optional)" %}</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" 
+                                      placeholder="{% trans 'Please let us know why you want to delete your data.' %}"></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="confirmDeletion" required>
+                                <label class="form-check-label" for="confirmDeletion">
+                                    {% trans "I understand that this action is permanent and cannot be undone." %}
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'gdpr_platform:dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>{% trans "Go Back" %}
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                                <i class="fas fa-trash me-2"></i>{% trans "Request Deletion" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Enable/disable delete button based on checkbox
+    $('#confirmDeletion').change(function() {
+        $('#deleteButton').prop('disabled', !this.checked);
+    });
+    
+    // Handle form submission
+    $('#dataDeletionForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        if (!confirm("{% trans 'Are you absolutely sure you want to proceed with account deletion?' %}")) {
+            return false;
+        }
+        
+        this.submit();
+    });
+});
+</script>
+{% endblock %} 

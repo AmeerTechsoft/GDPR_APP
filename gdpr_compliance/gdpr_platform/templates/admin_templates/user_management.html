@@ -1,0 +1,616 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "User Management" %} | GDPR Platform{% endblock %}
+
+{% block extra_css %}
+<!-- Add Bootstrap Icons CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+    /* Text Colors */
+    body {
+        color: #344767;
+    }
+    
+    .card {
+        background-color: white;
+        box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .15);
+    }
+
+    .card-body {
+        color: #344767;
+    }
+
+    /* Table Styles */
+    .table {
+        color: #344767;
+    }
+
+    .table thead th {
+        color: #344767;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+    }
+
+    .table tbody td {
+        color: #67748e;
+        vertical-align: middle;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        background-color: white;
+        color: #344767;
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .3);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        background-color: white;
+    }
+
+    .modal-footer {
+        border-top: 1px solid rgba(0,0,0,0.05);
+        background-color: white;
+    }
+
+    .modal-title {
+        color: #344767;
+        font-weight: 600;
+    }
+
+    /* Form Styles */
+    .form-label {
+        color: #344767;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        color: #344767;
+        border: 1px solid #e9ecef;
+    }
+
+    .form-control:focus {
+        color: #344767;
+        border-color: #7928CA;
+        box-shadow: 0 0 0 0.2rem rgba(121, 40, 202, 0.25);
+    }
+
+    /* Enhanced Form Select Styles */
+    .form-select {
+        display: block;
+        width: 100%;
+        padding: 0.625rem 2.25rem 0.625rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #344767 !important;
+        background-color: #ffffff !important;
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    /* Force background color for select and options */
+    select.form-select,
+    select.form-select option {
+        background-color: #ffffff !important;
+        color: #344767 !important;
+    }
+
+    /* Style for dropdown options */
+    .form-select option {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        background: #ffffff !important;
+        color: #344767 !important;
+        text-shadow: none !important;
+        -webkit-text-fill-color: #344767 !important;
+    }
+
+    /* Style for selected option */
+    .form-select option:checked,
+    .form-select option:hover,
+    .form-select option:focus {
+        background: #7928CA !important;
+        color: #ffffff !important;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Custom dropdown arrow */
+    .form-select:not([multiple]) {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23344767' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    }
+
+    /* Multiple select specific styles */
+    .form-select[multiple] {
+        padding-right: 0.75rem;
+        background-image: none;
+        height: auto;
+    }
+
+    /* Firefox specific styles */
+    @-moz-document url-prefix() {
+        .form-select,
+        .form-select option {
+            background-color: #ffffff !important;
+            color: #344767 !important;
+        }
+        
+        .form-select option:checked,
+        .form-select option:hover {
+            background-color: #7928CA !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 10px 100px #7928CA inset !important;
+        }
+    }
+
+    /* Webkit specific styles */
+    .form-select::-webkit-select-arrow-wrapper {
+        display: none;
+    }
+
+    /* Force colors for all browsers */
+    select:-internal-list-box option:checked,
+    select:-internal-list-box option:hover {
+        background-color: #7928CA !important;
+        color: #ffffff !important;
+    }
+
+    /* Additional select styling */
+    .form-select:focus {
+        border-color: #7928CA;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(121, 40, 202, 0.25);
+    }
+
+    /* Badge Styles */
+    .badge {
+        font-weight: 600;
+        padding: 0.5em 0.75em;
+    }
+
+    .badge.bg-success {
+        background-color: #dcfce7 !important;
+        color: #166534 !important;
+    }
+
+    .badge.bg-warning {
+        background-color: #fff7ed !important;
+        color: #9a3412 !important;
+    }
+
+    .badge.bg-danger {
+        background-color: #fef2f2 !important;
+        color: #991b1b !important;
+    }
+
+    .badge.bg-info {
+        background-color: #f0f9ff !important;
+        color: #075985 !important;
+    }
+
+    .badge.bg-secondary {
+        background-color: #f8f9fa !important;
+        color: #64748b !important;
+    }
+
+    /* Button Styles */
+    .btn-primary {
+        background-image: linear-gradient(310deg, #7928CA 0%, #FF0080 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+    }
+
+    .btn-primary:hover {
+        background-image: linear-gradient(310deg, #6923b6 0%, #e60073 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .btn-outline-primary {
+        color: #7928CA;
+        border-color: #7928CA;
+        background-color: transparent;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #7928CA;
+        border-color: #7928CA;
+        color: white;
+    }
+
+    .btn-outline-danger {
+        color: #dc2626;
+        border-color: #dc2626;
+        background-color: transparent;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc2626;
+        border-color: #dc2626;
+        color: white;
+    }
+
+    /* Pagination Styles */
+    .pagination .page-link {
+        color: #7928CA;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #7928CA;
+        border-color: #7928CA;
+    }
+
+    /* Alert Styles */
+    .alert {
+        border: none;
+        border-radius: 0.5rem;
+    }
+
+    .alert-danger {
+        background-color: #fef2f2;
+        color: #991b1b;
+    }
+
+    /* Action Button Styles */
+    .btn-group .btn {
+        padding: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        margin: 0 0.25rem;
+        border-radius: 0.5rem !important;
+    }
+
+    .btn-group .btn i {
+        font-size: 1.1rem;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    /* Icon specific styles */
+    .bi-pencil, .bi-trash {
+        font-size: 1rem;
+        line-height: 1;
+        width: 1rem;
+        height: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{% trans "User Management" %}</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <i class="bi bi-person-plus"></i> {% trans "Add User" %}
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="search" class="form-label">{% trans "Search" %}</label>
+                    <input type="text" class="form-control" id="search" name="search" value="{{ request.GET.search }}" placeholder="{% trans 'Email or username' %}">
+                </div>
+                <div class="col-md-2">
+                    <label for="role" class="form-label">{% trans "Role" %}</label>
+                    <select class="form-select bg-white" id="role" name="role" style="color: #344767 !important; background-color: white !important;">
+                        <option value="" style="background-color: white !important; color: #344767 !important;">{% trans "All Roles" %}</option>
+                        {% for role in available_roles %}
+                        <option value="{{ role.name }}" 
+                                {% if request.GET.role == role.name %}selected{% endif %}
+                                style="background-color: white !important; color: #344767 !important;">
+                            {{ role.name|title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="status" class="form-label">{% trans "Status" %}</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">{% trans "All Statuses" %}</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
+                        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>{% trans "Inactive" %}</option>
+                        <option value="suspended" {% if request.GET.status == 'suspended' %}selected{% endif %}>{% trans "Suspended" %}</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="sort" class="form-label">{% trans "Sort By" %}</label>
+                    <select class="form-select" id="sort" name="sort">
+                        <option value="date_joined" {% if request.GET.sort == 'date_joined' %}selected{% endif %}>{% trans "Date Joined" %}</option>
+                        <option value="email" {% if request.GET.sort == 'email' %}selected{% endif %}>{% trans "Email" %}</option>
+                        <option value="last_login" {% if request.GET.sort == 'last_login' %}selected{% endif %}>{% trans "Last Login" %}</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">{% trans "Apply Filters" %}</button>
+                    <a href="{% url 'gdpr_platform:user_management' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User List -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Email" %}</th>
+                            <th>{% trans "Name" %}</th>
+                            <th>{% trans "Roles" %}</th>
+                            <th>{% trans "Status" %}</th>
+                            <th>{% trans "Last Login" %}</th>
+                            <th>{% trans "2FA" %}</th>
+                            <th>{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.get_full_name }}</td>
+                            <td>
+                                {% for role in user.roles.all %}
+                                <span class="badge bg-info">{{ role.name }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ user.account_status|yesno:'success,warning,danger' }}">
+                                    {{ user.get_account_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ user.last_login|default_if_none:"-" }}</td>
+                            <td>
+                                <span class="badge bg-{{ user.two_factor_enabled|yesno:'success,secondary' }}">
+                                    {{ user.two_factor_enabled|yesno:_("Enabled,Disabled") }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editUserModal" 
+                                            data-user-id="{{ user.id }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteUserModal"
+                                            data-user-id="{{ user.id }}"
+                                            data-user-email="{{ user.email }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">{% trans "No users found" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if users.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if users.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ users.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                            {% trans "Previous" %}
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in users.paginator.page_range %}
+                    <li class="page-item {% if users.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    {% if users.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ users.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">
+                            {% trans "Next" %}
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Add New User" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'gdpr_platform:user_management' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">{% trans "Email" %}</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">{% trans "First Name" %}</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">{% trans "Last Name" %}</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="roles" class="form-label">{% trans "Roles" %}</label>
+                        <select class="form-select" id="roles" name="roles" multiple required>
+                            {% for role in available_roles %}
+                            <option value="{{ role.id }}">{{ role.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-primary">{% trans "Add User" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Edit User" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'gdpr_platform:user_management' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="user_id" id="editUserId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_email" class="form-label">{% trans "Email" %}</label>
+                        <input type="email" class="form-control" id="edit_email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_first_name" class="form-label">{% trans "First Name" %}</label>
+                        <input type="text" class="form-control" id="edit_first_name" name="first_name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_last_name" class="form-label">{% trans "Last Name" %}</label>
+                        <input type="text" class="form-control" id="edit_last_name" name="last_name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_roles" class="form-label">{% trans "Roles" %}</label>
+                        <select class="form-select" id="edit_roles" name="roles" multiple required>
+                            {% for role in available_roles %}
+                            <option value="{{ role.id }}">{{ role.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_status" class="form-label">{% trans "Account Status" %}</label>
+                        <select class="form-select" id="edit_status" name="status">
+                            <option value="active">{% trans "Active" %}</option>
+                            <option value="inactive">{% trans "Inactive" %}</option>
+                            <option value="suspended">{% trans "Suspended" %}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Delete User" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'gdpr_platform:user_management' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="user_id" id="deleteUserId">
+                <div class="modal-body">
+                    <p>{% trans "Are you sure you want to delete the user" %} <strong id="deleteUserEmail"></strong>?</p>
+                    <p class="text-danger">{% trans "This action cannot be undone." %}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-danger">{% trans "Delete User" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Handle edit user modal
+    document.querySelectorAll('[data-bs-target="#editUserModal"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            document.getElementById('editUserId').value = userId;
+            
+            // Fetch user data and populate form
+            fetch(`/gdpr/api/users/${userId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate form fields with user data
+                    document.getElementById('edit_email').value = data.email || '';
+                    document.getElementById('edit_first_name').value = data.first_name || '';
+                    document.getElementById('edit_last_name').value = data.last_name || '';
+                    document.getElementById('edit_status').value = data.status || 'active';
+                    
+                    // Handle roles selection
+                    const rolesSelect = document.getElementById('edit_roles');
+                    if (data.roles && Array.isArray(data.roles)) {
+                        Array.from(rolesSelect.options).forEach(option => {
+                            option.selected = data.roles.includes(parseInt(option.value));
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching user data:', error);
+                    alert('Error loading user data. Please try again.');
+                });
+        });
+    });
+
+    // Handle delete user modal
+    document.querySelectorAll('[data-bs-target="#deleteUserModal"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            const userEmail = this.dataset.userEmail;
+            document.getElementById('deleteUserId').value = userId;
+            document.getElementById('deleteUserEmail').textContent = userEmail;
+        });
+    });
+</script>
+{% endblock %} 

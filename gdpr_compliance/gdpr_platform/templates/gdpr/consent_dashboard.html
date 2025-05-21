@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Consent Management - GDPR Platform{% endblock %}
+
+{% block page_title %}Consent Management{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Consent Overview Card -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header pb-0">
+                <h6 class="mb-0">Your Consent Preferences</h6>
+                <p class="text-sm mb-0">Manage how we use your personal data</p>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'gdpr_platform:update_consent' %}" id="consent-form">
+                    {% csrf_token %}
+                    
+                    <!-- Marketing Consent -->
+                    <div class="consent-section mb-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-1">Marketing Communications</h6>
+                                <p class="text-sm text-secondary mb-0">
+                                    Allow us to send you marketing communications and personalized offers
+                                </p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="marketing_consent" 
+                                       id="marketing_consent" {% if consents.marketing %}checked{% endif %}>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Consent -->
+                    <div class="consent-section mb-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-1">Analytics & Performance</h6>
+                                <p class="text-sm text-secondary mb-0">
+                                    Help us improve our platform by allowing analytics and performance tracking
+                                </p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="analytics_consent" 
+                                       id="analytics_consent" {% if consents.analytics %}checked{% endif %}>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Third-party Consent -->
+                    <div class="consent-section mb-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-1">Third-party Data Sharing</h6>
+                                <p class="text-sm text-secondary mb-0">
+                                    Allow sharing of your data with our trusted partners for service improvement
+                                </p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="third_party_consent" 
+                                       id="third_party_consent" {% if consents.third_party %}checked{% endif %}>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn bg-gradient-primary">Update Consent Preferences</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consent History Card -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0">
+                <h6 class="mb-0">Consent History</h6>
+                <p class="text-sm mb-0">Track changes to your consent preferences</p>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Category</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in consent_history %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex px-2 py-1">
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm">{{ log.timestamp|date:"Y-m-d" }}</h6>
+                                            <p class="text-xs text-secondary mb-0">{{ log.timestamp|date:"H:i" }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ log.category|title }}</p>
+                                </td>
+                                <td>
+                                    <span class="badge badge-sm {% if log.new_state %}bg-gradient-success{% else %}bg-gradient-danger{% endif %}">
+                                        {{ log.action|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4">
+                                    <p class="text-sm mb-0">No consent changes recorded</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const consentForm = document.getElementById('consent-form');
+    const submitButton = consentForm.querySelector('button[type="submit"]');
+
+    consentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
+
+        fetch(this.action, {
+            method: 'POST',
+            body: new FormData(this),
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show';
+            alert.innerHTML = `
+                Consent preferences updated successfully
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.card-body').insertBefore(alert, consentForm);
+            
+            // Refresh consent history
+            location.reload();
+        })
+        .catch(error => {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+                Failed to update consent preferences. Please try again.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.card-body').insertBefore(alert, consentForm);
+        })
+        .finally(() => {
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Update Consent Preferences';
+        });
+    });
+});
+</script>
+{% endblock %} 

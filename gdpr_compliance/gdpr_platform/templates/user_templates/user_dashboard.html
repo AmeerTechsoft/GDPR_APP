@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Account Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">{% trans "Welcome" %}, {{ user.get_full_name|default:user.username }}</h2>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4 mb-4">
+        <!-- Account Security -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Account Security" %}</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-grow-1">
+                            <p class="mb-0">{% trans "Two-Factor Authentication" %}</p>
+                            </div>
+                        <div class="ms-3">
+                            {% if two_factor_enabled %}
+                                <span class="badge bg-success">{% trans "Enabled" %}</span>
+                            {% else %}
+                                <span class="badge bg-warning">{% trans "Disabled" %}</span>
+                                <a href="{% url 'gdpr_platform:setup_2fa' %}" class="btn btn-sm btn-primary ms-2">
+                                    {% trans "Enable" %}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+                            </div>
+
+        <!-- Privacy Status -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Privacy Status" %}</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-grow-1">
+                            <p class="mb-0">{% trans "Cookie Preferences" %}</p>
+                        </div>
+                        <div class="ms-3">
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cookieModal">
+                                {% trans "Manage" %}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-0">{% trans "Marketing Communications" %}</p>
+                            </div>
+                        <div class="ms-3">
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#marketingModal">
+                                {% trans "Update" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                            </div>
+
+        <!-- Data Rights -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Your Data Rights" %}</h5>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'gdpr_platform:data_export' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-download me-2"></i>{% trans "Export Data" %}
+                        </a>
+                        <a href="{% url 'gdpr_platform:data_rectification' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-edit me-2"></i>{% trans "Update Data" %}
+                        </a>
+                        <a href="{% url 'gdpr_platform:data_deletion' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-trash me-2"></i>{% trans "Request Deletion" %}
+                        </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Support -->
+        <div class="col-md-6 col-xl-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                    <h5 class="card-title">{% trans "Support" %}</h5>
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-ticket-alt me-2"></i>{% trans "New Support Ticket" %}
+                        </a>
+                        {% if open_tickets %}
+                            <div class="list-group-item">
+                                <small class="text-muted">{% trans "Open Tickets" %}: {{ open_tickets.count }}</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row g-4">
+        <!-- Recent Activity -->
+        <div class="col-12 col-xl-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans "Recent Activity" %}</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Date" %}</th>
+                                <th>{% trans "Activity" %}</th>
+                                <th>{% trans "Status" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in recent_activity %}
+                                <tr>
+                                    <td>{{ activity.timestamp|date:"SHORT_DATETIME_FORMAT" }}</td>
+                                    <td>{{ activity.description }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ activity.get_status_color }}">
+                                            {{ activity.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">{% trans "No recent activity" %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Data Requests -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans "Data Requests" %}</h5>
+                </div>
+                            <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                <th>{% trans "Type" %}</th>
+                                <th>{% trans "Date" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Actions" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for request in data_requests %}
+                                        <tr>
+                                            <td>{{ request.get_request_type_display }}</td>
+                                    <td>{{ request.request_date|date:"SHORT_DATE_FORMAT" }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ request.get_status_color }}">
+                                                    {{ request.get_status_display }}
+                                                </span>
+                                            </td>
+                                    <td>
+                                        <a href="{% url 'gdpr_platform:request_details' request.id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            {% trans "View" %}
+                                        </a>
+                                    </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                    <td colspan="4" class="text-center">{% trans "No data requests" %}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                        </div>
+                    </div>
+                </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-12 col-xl-4">
+            <!-- Breach Notifications -->
+            {% if breach_notifications %}
+                <div class="card mb-4 border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% trans "Data Breach Notifications" %}
+                            </h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                                {% for notification in breach_notifications %}
+                                <div class="list-group-item">
+                                        <h6 class="mb-1">{{ notification.breach.title }}</h6>
+                                <p class="mb-1 small">{{ notification.breach.description }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        {{ notification.notified_at|date:"SHORT_DATETIME_FORMAT" }}
+                                    </small>
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="acknowledgeBreachNotification('{{ notification.id }}')">
+                                        {% trans "Acknowledge" %}
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            <!-- Active Sessions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans "Active Sessions" %}</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for session in active_sessions %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ session.device_name }}</h6>
+                                    <small class="text-muted">{{ session.ip_address }}</small>
+                                </div>
+                                {% if not session.is_current %}
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="terminateSession('{{ session.id }}')">
+                                        {% trans "Terminate" %}
+                                    </button>
+                                {% else %}
+                                    <span class="badge bg-success">{% trans "Current" %}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item text-center">{% trans "No active sessions" %}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Data Processing Activities -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans "Data Processing" %}</h5>
+            </div>
+                <div class="list-group list-group-flush">
+                    {% for activity in data_processing_activities %}
+                        <div class="list-group-item">
+                            <h6 class="mb-1">{{ activity.activity_type }}</h6>
+                            <p class="mb-1 small">{{ activity.description }}</p>
+                            <small class="text-muted">{{ activity.timestamp|date:"SHORT_DATETIME_FORMAT" }}</small>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item text-center">{% trans "No recent processing activities" %}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cookie Preferences Modal -->
+{% include "includes/cookie_preferences_modal.html" %}
+
+<!-- Marketing Preferences Modal -->
+{% include "includes/marketing_preferences_modal.html" %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Acknowledge breach notification
+function acknowledgeBreachNotification(notificationId) {
+    if (confirm('{% trans "Are you sure you want to acknowledge this notification?" %}')) {
+        fetch(`{% url 'gdpr_platform:acknowledge_breach' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', notificationId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ notification_id: notificationId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                    location.reload();
+                }
+        });
+    }
+}
+
+// Terminate session
+function terminateSession(sessionId) {
+    if (confirm('{% trans "Are you sure you want to terminate this session?" %}')) {
+        fetch(`{% url 'gdpr_platform:terminate_session' %}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ session_id: sessionId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

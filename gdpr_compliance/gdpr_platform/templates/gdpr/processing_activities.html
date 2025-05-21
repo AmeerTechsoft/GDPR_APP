@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Processing Activities" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{% trans "Processing Activities" %}</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+            <i class="bi bi-plus-circle"></i> {% trans "Add Activity" %}
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="category" class="form-label">{% trans "Category" %}</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="">{% trans "All Categories" %}</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if cat.id == selected_category %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="legal_basis" class="form-label">{% trans "Legal Basis" %}</label>
+                    <select class="form-select" id="legal_basis" name="legal_basis">
+                        <option value="">{% trans "All" %}</option>
+                        {% for basis in legal_bases %}
+                        <option value="{{ basis.0 }}" {% if basis.0 == selected_basis %}selected{% endif %}>
+                            {{ basis.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="risk_level" class="form-label">{% trans "Risk Level" %}</label>
+                    <select class="form-select" id="risk_level" name="risk_level">
+                        <option value="">{% trans "All Levels" %}</option>
+                        <option value="low" {% if selected_risk == 'low' %}selected{% endif %}>{% trans "Low" %}</option>
+                        <option value="medium" {% if selected_risk == 'medium' %}selected{% endif %}>{% trans "Medium" %}</option>
+                        <option value="high" {% if selected_risk == 'high' %}selected{% endif %}>{% trans "High" %}</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">{% trans "Status" %}</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">{% trans "All Status" %}</option>
+                        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
+                        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>{% trans "Pending" %}</option>
+                        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>{% trans "Completed" %}</option>
+                        <option value="suspended" {% if selected_status == 'suspended' %}selected{% endif %}>{% trans "Suspended" %}</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">{% trans "Apply Filters" %}</button>
+                    <a href="{% url 'gdpr_platform:processing_activities' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Activities List -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Activity Name" %}</th>
+                            <th>{% trans "Category" %}</th>
+                            <th>{% trans "Legal Basis" %}</th>
+                            <th>{% trans "Data Categories" %}</th>
+                            <th>{% trans "Risk Level" %}</th>
+                            <th>{% trans "Status" %}</th>
+                            <th>{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in activities %}
+                        <tr>
+                            <td>{{ activity.name }}</td>
+                            <td>{{ activity.category }}</td>
+                            <td>{{ activity.get_legal_basis_display }}</td>
+                            <td>
+                                {% for category in activity.data_categories %}
+                                <span class="badge bg-info">{{ category }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ activity.risk_class }}">
+                                    {{ activity.get_risk_level_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ activity.status_class }}">
+                                    {{ activity.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editActivityModal"
+                                        data-activity-id="{{ activity.id }}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteActivityModal"
+                                        data-activity-id="{{ activity.id }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">{% trans "No processing activities found" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if activities.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if activities.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ activities.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {% trans "Previous" %}
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in activities.paginator.page_range %}
+                    <li class="page-item {% if activities.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    {% if activities.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ activities.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {% trans "Next" %}
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Activity Modal -->
+<div class="modal fade" id="addActivityModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Add Processing Activity" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addActivityForm">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">{% trans "Activity Name" %}</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">{% trans "Category" %}</label>
+                        <select class="form-select" id="category" name="category" required>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="legal_basis" class="form-label">{% trans "Legal Basis" %}</label>
+                        <select class="form-select" id="legal_basis" name="legal_basis" required>
+                            {% for basis in legal_bases %}
+                            <option value="{{ basis.0 }}">{{ basis.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="data_categories" class="form-label">{% trans "Data Categories" %}</label>
+                        <select class="form-select" id="data_categories" name="data_categories" multiple required>
+                            {% for category in data_categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">{% trans "Description" %}</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="risk_level" class="form-label">{% trans "Risk Level" %}</label>
+                        <select class="form-select" id="risk_level" name="risk_level" required>
+                            <option value="low">{% trans "Low" %}</option>
+                            <option value="medium">{% trans "Medium" %}</option>
+                            <option value="high">{% trans "High" %}</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-primary" id="saveActivity">{% trans "Save Activity" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Activity Modal -->
+<div class="modal fade" id="editActivityModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Edit Processing Activity" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editActivityForm">
+                    <!-- Same fields as Add Activity form -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-primary" id="updateActivity">{% trans "Update Activity" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Activity Modal -->
+<div class="modal fade" id="deleteActivityModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Delete Processing Activity" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Are you sure you want to delete this processing activity? This action cannot be undone." %}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">{% trans "Delete" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Handle activity deletion
+    let activityToDelete = null;
+    
+    $('#deleteActivityModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        activityToDelete = button.data('activity-id');
+    });
+    
+    $('#confirmDelete').on('click', function() {
+        if (activityToDelete) {
+            fetch(`/api/processing-activities/${activityToDelete}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+        }
+    });
+
+    // Handle activity edit
+    $('#editActivityModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        const activityId = button.data('activity-id');
+        
+        // Fetch activity details and populate form
+        fetch(`/api/processing-activities/${activityId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const form = $('#editActivityForm');
+                form.find('[name=name]').val(data.name);
+                form.find('[name=category]').val(data.category);
+                form.find('[name=legal_basis]').val(data.legal_basis);
+                form.find('[name=data_categories]').val(data.data_categories);
+                form.find('[name=description]').val(data.description);
+                form.find('[name=risk_level]').val(data.risk_level);
+            });
+    });
+</script>
+{% endblock %} 

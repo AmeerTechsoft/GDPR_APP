@@ -1,0 +1,109 @@
+.policy-content {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #344767;
+}
+
+.policy-content h2 {
+    color: #344767;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.policy-content h2:first-child {
+    margin-top: 0;
+}
+
+.policy-content p {
+    margin-bottom: 1rem;
+}
+
+.policy-content ul {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.policy-content li {
+    margin-bottom: 0.5rem;
+}
+
+.policy-content a {
+    color: #5e72e4;
+    text-decoration: none;
+}
+
+.policy-content a:hover {
+    text-decoration: underline;
+}
+
+/* Key Points Cards */
+.card.bg-light {
+    transition: transform 0.2s ease;
+}
+
+.card.bg-light:hover {
+    transform: translateY(-5px);
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #344767;
+}
+
+.card-text {
+    color: #67748e;
+    font-size: 0.95rem;
+}
+
+/* Consent Section */
+.consent-section {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.form-check-label {
+    color: #344767;
+    font-size: 0.95rem;
+}
+
+/* Version Badge */
+.badge.bg-primary {
+    font-size: 0.85rem;
+    padding: 0.5em 1em;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .policy-content {
+        color: #e9ecef;
+    }
+    
+    .policy-content h2 {
+        color: #fff;
+    }
+    
+    .card.bg-light {
+        background-color: #2a2d3a !important;
+    }
+    
+    .card-title {
+        color: #fff;
+    }
+    
+    .card-text {
+        color: #ced4da;
+    }
+    
+    .consent-section {
+        background-color: #2a2d3a;
+    }
+    
+    .form-check-label {
+        color: #e9ecef;
+    }
+} 

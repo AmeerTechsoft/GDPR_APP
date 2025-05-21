@@ -1,0 +1,29 @@
+Welcome to {{ site_name }}!
+
+Dear {{ user.get_full_name|default:user.username }},
+
+Thank you for registering with {{ site_name }}. Your account has been successfully created.
+
+Here's what you can do with your account:
+- Access and export your personal data
+- Update your privacy preferences
+- Manage cookie settings
+- Submit data-related requests
+- View your activity log
+
+For security reasons, we recommend:
+1. Setting up two-factor authentication
+2. Reviewing your privacy settings
+3. Familiarizing yourself with our privacy policy
+
+You can access your dashboard at any time by visiting:
+{{ request.scheme }}://{{ request.get_host }}{% url 'gdpr_platform:user_dashboard' %}
+
+If you have any questions or concerns about your privacy rights, please don't hesitate to contact our Data Protection Officer at {{ dpo_email }}.
+
+Best regards,
+The {{ site_name }} Team
+
+---
+This is an automated message. Please do not reply to this email.
+If you did not create this account, please contact us immediately. 

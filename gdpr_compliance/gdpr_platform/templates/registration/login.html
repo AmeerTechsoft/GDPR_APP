@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - GDPR Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        min-height: calc(100vh - 70px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(121, 40, 202, 0.05) 0%, rgba(255, 0, 128, 0.05) 100%);
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
+        border-radius: 1rem;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .15);
+        transition: all 0.3s ease;
+    }
+
+    .auth-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175);
+    }
+
+    .auth-header {
+        padding: 2rem 1.5rem;
+        text-align: center;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .auth-header h4 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-body {
+        padding: 2rem 1.5rem;
+    }
+
+    .auth-footer {
+        padding: 1.5rem;
+        text-align: center;
+        border-top: 1px solid rgba(0,0,0,0.05);
+        background: rgba(248, 249, 250, 0.5);
+        border-radius: 0 0 1rem 1rem;
+    }
+
+    .input-group {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+    }
+
+    .input-group:focus-within {
+        border-color: #7928CA;
+        box-shadow: 0 0 0 0.2rem rgba(121, 40, 202, 0.25);
+    }
+
+    .input-group-text {
+        border: none;
+        background-color: #f8f9fa;
+        color: #7928CA;
+        padding: 0.75rem 1rem;
+    }
+
+    .form-control {
+        border: none;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        background-color: #f8f9fa;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        background-color: #fff;
+    }
+
+    .btn-auth {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        background-image: linear-gradient(310deg, #7928CA 0%, #FF0080 100%);
+        border: none;
+        color: white;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .auth-divider {
+        position: relative;
+        text-align: center;
+        margin: 1.5rem 0;
+    }
+
+    .auth-divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: rgba(0,0,0,0.1);
+    }
+
+    .auth-divider span {
+        position: relative;
+        background: #fff;
+        padding: 0 1rem;
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .alert-danger {
+        background-color: #fef2f2;
+        color: #991b1b;
+    }
+
+    .alert i {
+        color: #dc2626;
+    }
+
+    .form-text {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+
+    .auth-links {
+        font-size: 0.875rem;
+    }
+
+    .auth-links a {
+        color: #7928CA;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .auth-links a:hover {
+        color: #FF0080;
+    }
+
+    @media (max-width: 576px) {
+        .auth-container {
+            padding: 0.5rem;
+        }
+
+        .auth-card {
+            border-radius: 0.75rem;
+        }
+
+        .auth-header, .auth-body, .auth-footer {
+            padding: 1.25rem;
+        }
+
+        .form-control, .btn-auth {
+            font-size: 1rem;
+            padding: 0.625rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h4 class="text-gradient text-primary mb-2">Welcome Back</h4>
+            <p class="text-muted small mb-0">Enter your credentials to access your account</p>
+        </div>
+
+        <div class="auth-body">
+            {% if form.errors %}
+            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <div class="small">Invalid username or password.</div>
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'gdpr_platform:login' %}" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="id_username" class="form-label small">Username</label>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" 
+                               name="username" 
+                               class="form-control" 
+                               id="id_username" 
+                               required
+                               autocomplete="username"
+                               placeholder="Enter your username">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="id_password" class="form-label small">Password</label>
+                        <a href="{% url 'gdpr_platform:custom_password_reset' %}" class="text-sm text-primary text-decoration-none">
+                            <i class="fas fa-key me-1"></i>Forgot password?
+                        </a>
+                    </div>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" 
+                               name="password" 
+                               class="form-control" 
+                               id="id_password" 
+                               required
+                               autocomplete="current-password"
+                               placeholder="Enter your password">
+                        <button class="btn btn-outline-secondary" 
+                                type="button" 
+                                onclick="togglePassword()"
+                                aria-label="Toggle password visibility">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input" type="checkbox" name="remember" id="remember">
+                    <label class="form-check-label small" for="remember">Keep me signed in</label>
+                </div>
+
+                <button type="submit" class="btn btn-gradient-primary btn-auth w-100">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign in
+                </button>
+
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
+        </div>
+
+        <div class="auth-footer">
+            <p class="mb-0 small">
+                Don't have an account? 
+                <a href="{% url 'gdpr_platform:register' %}" class="text-primary fw-bold text-decoration-none">
+                    Create account
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus username field on load
+    document.getElementById('id_username').focus();
+
+    // Form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+});
+
+// Toggle password visibility
+function togglePassword() {
+    const passwordInput = document.getElementById('id_password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}

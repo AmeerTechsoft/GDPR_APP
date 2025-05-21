@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #344767;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(310deg, #7928CA 0%, #FF0080 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(310deg, #7928CA 0%, #FF0080 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #67748e;
+            font-size: 12px;
+        }
+        .request-details {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .request-id {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Data Request Confirmation</h2>
+        </div>
+        <div class="content">
+            <p>Dear {{ user.get_full_name|default:user.username }},</p>
+            
+            <p>We have received your {{ request.get_request_type_display|lower }} request. Our team will process your request according to GDPR requirements.</p>
+            
+            <div class="request-details">
+                <p><strong>Request Type:</strong> {{ request.get_request_type_display }}</p>
+                <p><strong>Request ID:</strong> <span class="request-id">{{ request.tracking_id }}</span></p>
+                <p><strong>Submitted:</strong> {{ request.request_date|date:"F j, Y H:i" }}</p>
+                {% if request.notes %}
+                <p><strong>Additional Notes:</strong> {{ request.notes }}</p>
+                {% endif %}
+            </div>
+
+            <p><strong>Next Steps:</strong></p>
+            <ul>
+                <li>We will review your request within 72 hours</li>
+                <li>You will receive updates about the status of your request</li>
+                <li>We may contact you if we need additional information</li>
+            </ul>
+
+            <a href="{{ protocol }}://{{ domain }}{% url 'gdpr_platform:data_rights_dashboard' %}" class="button">
+                View Request Status
+            </a>
+
+            <p>If you did not submit this request, please contact us immediately.</p>
+
+            <p>Best regards,<br>GDPR Compliance Team</p>
+        </div>
+        <div class="footer">
+            <p>This email was sent by the GDPR Compliance Platform</p>
+            <p>Please do not reply to this automated message</p>
+        </div>
+    </div>
+</body>
+</html> 

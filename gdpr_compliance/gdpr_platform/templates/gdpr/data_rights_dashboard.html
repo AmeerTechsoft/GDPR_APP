@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Rights Dashboard - GDPR Platform{% endblock %}
+
+{% block page_title %}Data Rights Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col">
+                            <h6>Your Data Rights Requests</h6>
+                            <p class="text-sm mb-0">
+                                View and manage your data-related requests
+                            </p>
+                        </div>
+                        <div class="col text-end">
+                            <a href="{% url 'gdpr_platform:submit_data_request' %}" class="btn bg-gradient-primary">
+                                <i class="fas fa-plus me-2"></i> New Request
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-xl-3 col-sm-6 mb-4">
+                            <div class="card">
+                                <div class="card-body p-3">
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <div class="numbers">
+                                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Pending Requests</p>
+                                                <h5 class="font-weight-bolder mb-0">
+                                                    {{ pending_requests }}
+                                                </h5>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 text-end">
+                                            <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
+                                                <i class="fas fa-clock text-lg opacity-10" aria-hidden="true"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-sm-6 mb-4">
+                            <div class="card">
+                                <div class="card-body p-3">
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <div class="numbers">
+                                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Completed Requests</p>
+                                                <h5 class="font-weight-bolder mb-0">
+                                                    {{ completed_requests }}
+                                                </h5>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 text-end">
+                                            <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
+                                                <i class="fas fa-check text-lg opacity-10" aria-hidden="true"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table class="table align-items-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Request Type</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date Requested</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Completion Date</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for request in user_requests %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex px-2 py-1">
+                                                    <div class="d-flex flex-column justify-content-center">
+                                                        <h6 class="mb-0 text-sm">{{ request.get_request_type_display }}</h6>
+                                                        {% if request.notes %}
+                                                        <p class="text-xs text-secondary mb-0">{{ request.notes|truncatechars:50 }}</p>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-sm bg-gradient-{{ request.status }}">
+                                                    {{ request.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ request.request_date|date:"F j, Y" }}</p>
+                                                <p class="text-xs text-secondary mb-0">{{ request.request_date|time:"H:i" }}</p>
+                                            </td>
+                                            <td>
+                                                {% if request.completion_date %}
+                                                    <p class="text-xs font-weight-bold mb-0">{{ request.completion_date|date:"F j, Y" }}</p>
+                                                    <p class="text-xs text-secondary mb-0">{{ request.completion_date|time:"H:i" }}</p>
+                                                {% else %}
+                                                    <p class="text-xs text-secondary mb-0">-</p>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if request.status == 'completed' %}
+                                                    <a href="{% url 'gdpr_platform:download_personal_data' request.id %}" 
+                                                       class="btn btn-sm bg-gradient-info mb-0">
+                                                        <i class="fas fa-download me-2"></i>Download Data
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4">
+                                                <p class="text-sm mb-0">You haven't made any data requests yet.</p>
+                                                <a href="{% url 'gdpr_platform:submit_data_request' %}" class="btn btn-sm bg-gradient-primary mt-3">
+                                                    Submit Your First Request
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add status-specific colors to badges
+    document.querySelectorAll('.badge').forEach(function(badge) {
+        if (badge.classList.contains('bg-gradient-pending')) {
+            badge.classList.remove('bg-gradient-pending');
+            badge.classList.add('bg-gradient-warning');
+        } else if (badge.classList.contains('bg-gradient-processing')) {
+            badge.classList.remove('bg-gradient-processing');
+            badge.classList.add('bg-gradient-info');
+        } else if (badge.classList.contains('bg-gradient-completed')) {
+            badge.classList.remove('bg-gradient-completed');
+            badge.classList.add('bg-gradient-success');
+        } else if (badge.classList.contains('bg-gradient-rejected')) {
+            badge.classList.remove('bg-gradient-rejected');
+            badge.classList.add('bg-gradient-danger');
+        }
+    });
+});
+</script>
+{% endblock %} 

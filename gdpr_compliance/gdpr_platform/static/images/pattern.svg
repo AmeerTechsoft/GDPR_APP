@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1440" height="800" viewBox="0 0 1440 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g opacity="0.3">
+        <circle cx="100" cy="100" r="10" fill="white"/>
+        <circle cx="300" cy="200" r="8" fill="white"/>
+        <circle cx="500" cy="150" r="12" fill="white"/>
+        <circle cx="700" cy="300" r="9" fill="white"/>
+        <circle cx="900" cy="250" r="11" fill="white"/>
+        <circle cx="1100" cy="150" r="10" fill="white"/>
+        <circle cx="1300" cy="200" r="8" fill="white"/>
+        <circle cx="200" cy="400" r="12" fill="white"/>
+        <circle cx="400" cy="350" r="9" fill="white"/>
+        <circle cx="600" cy="450" r="11" fill="white"/>
+        <circle cx="800" cy="500" r="10" fill="white"/>
+        <circle cx="1000" cy="400" r="8" fill="white"/>
+        <circle cx="1200" cy="450" r="12" fill="white"/>
+        <circle cx="1400" cy="500" r="9" fill="white"/>
+        <circle cx="150" cy="600" r="11" fill="white"/>
+        <circle cx="350" cy="550" r="10" fill="white"/>
+        <circle cx="550" cy="650" r="8" fill="white"/>
+        <circle cx="750" cy="700" r="12" fill="white"/>
+        <circle cx="950" cy="600" r="9" fill="white"/>
+        <circle cx="1150" cy="650" r="11" fill="white"/>
+        <circle cx="1350" cy="700" r="10" fill="white"/>
+    </g>
+    <path d="M0 0L1440 0L1440 800C1080 700 360 700 0 800L0 0Z" fill="white" fill-opacity="0.05"/>
+</svg> 

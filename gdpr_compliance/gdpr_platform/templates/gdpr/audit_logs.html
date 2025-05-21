@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Audit Logs" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{% trans "Audit Logs" %}</h1>
+        <div>
+            <button type="button" class="btn btn-outline-primary me-2" id="exportLogs">
+                <i class="bi bi-download"></i> {% trans "Export Logs" %}
+            </button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                <i class="bi bi-funnel"></i> {% trans "Filter" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="collapse mb-4" id="filterCollapse">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="action" class="form-label">{% trans "Action Type" %}</label>
+                        <select class="form-select" id="action" name="action">
+                            <option value="">{% trans "All Actions" %}</option>
+                            {% for action in available_actions %}
+                            <option value="{{ action.0 }}" {% if request.GET.action == action.0 %}selected{% endif %}>
+                                {{ action.1 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="user" class="form-label">{% trans "User" %}</label>
+                        <input type="text" class="form-control" id="user" name="user" 
+                               value="{{ request.GET.user }}" placeholder="{% trans 'Email or username' %}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="date_from" class="form-label">{% trans "Date From" %}</label>
+                        <input type="date" class="form-control" id="date_from" name="date_from" 
+                               value="{{ request.GET.date_from }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="date_to" class="form-label">{% trans "Date To" %}</label>
+                        <input type="date" class="form-control" id="date_to" name="date_to" 
+                               value="{{ request.GET.date_to }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="resource_type" class="form-label">{% trans "Resource Type" %}</label>
+                        <select class="form-select" id="resource_type" name="resource_type">
+                            <option value="">{% trans "All Resources" %}</option>
+                            {% for type in available_resource_types %}
+                            <option value="{{ type.0 }}" {% if request.GET.resource_type == type.0 %}selected{% endif %}>
+                                {{ type.1 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">{% trans "Status" %}</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">{% trans "All Statuses" %}</option>
+                            {% for status in available_statuses %}
+                            <option value="{{ status.0 }}" {% if request.GET.status == status.0 %}selected{% endif %}>
+                                {{ status.1 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="ip_address" class="form-label">{% trans "IP Address" %}</label>
+                        <input type="text" class="form-control" id="ip_address" name="ip_address" 
+                               value="{{ request.GET.ip_address }}" placeholder="{% trans 'IP address' %}">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">{% trans "Apply Filters" %}</button>
+                        <a href="{% url 'gdpr_platform:activity_log' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Timestamp" %}</th>
+                            <th>{% trans "User" %}</th>
+                            <th>{% trans "Action" %}</th>
+                            <th>{% trans "Resource" %}</th>
+                            <th>{% trans "IP Address" %}</th>
+                            <th>{% trans "Status" %}</th>
+                            <th>{% trans "Details" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in audit_logs %}
+                        <tr>
+                            <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                            <td>{{ log.user.email }}</td>
+                            <td>{{ log.get_action_display }}</td>
+                            <td>{{ log.resource_type }}: {{ log.resource_id }}</td>
+                            <td>{{ log.ip_address }}</td>
+                            <td>
+                                <span class="badge bg-{{ log.status_class }}">
+                                    {{ log.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-info" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#logDetailsModal"
+                                        data-log-id="{{ log.id }}">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">{% trans "No audit logs found" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if audit_logs.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if audit_logs.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ audit_logs.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {% trans "Previous" %}
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in audit_logs.paginator.page_range %}
+                    <li class="page-item {% if audit_logs.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    {% if audit_logs.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ audit_logs.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {% trans "Next" %}
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Log Details Modal -->
+<div class="modal fade" id="logDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Log Details" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h6>{% trans "User Agent" %}</h6>
+                    <p id="userAgent" class="text-muted"></p>
+                </div>
+                <div class="mb-3">
+                    <h6>{% trans "Request Method" %}</h6>
+                    <p id="requestMethod" class="text-muted"></p>
+                </div>
+                <div class="mb-3">
+                    <h6>{% trans "Request Path" %}</h6>
+                    <p id="requestPath" class="text-muted"></p>
+                </div>
+                <div class="mb-3">
+                    <h6>{% trans "Additional Details" %}</h6>
+                    <pre id="additionalDetails" class="bg-light p-3 rounded"></pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Close" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Handle log details modal
+    document.querySelectorAll('[data-bs-target="#logDetailsModal"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const logId = this.dataset.logId;
+            fetch(`/gdpr/api/audit-logs/${logId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userAgent').textContent = data.user_agent;
+                    document.getElementById('requestMethod').textContent = data.request_method;
+                    document.getElementById('requestPath').textContent = data.request_path;
+                    document.getElementById('additionalDetails').textContent = 
+                        JSON.stringify(data.details, null, 2);
+                });
+        });
+    });
+
+    // Handle log export
+    document.getElementById('exportLogs').addEventListener('click', function() {
+        const queryString = window.location.search;
+        window.location.href = `/gdpr/api/audit-logs/export/${queryString}`;
+    });
+</script>
+{% endblock %} 

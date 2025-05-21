@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Data Requests Overview" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{% trans "Data Requests Overview" %}</h1>
+        <div>
+            <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="bi bi-download"></i> {% trans "Export Report" %}
+            </button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="bi bi-funnel"></i> {% trans "Filter" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Total Requests" %}</h6>
+                    <h2 class="card-title mb-0">{{ stats.total }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Pending Requests" %}</h6>
+                    <h2 class="card-title mb-0">{{ stats.pending }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Completed Requests" %}</h6>
+                    <h2 class="card-title mb-0">{{ stats.completed }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Avg. Response Time" %}</h6>
+                    <h2 class="card-title mb-0">{{ stats.avg_response_days }} {% trans "days" %}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requests Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Request ID" %}</th>
+                            <th>{% trans "Type" %}</th>
+                            <th>{% trans "User" %}</th>
+                            <th>{% trans "Status" %}</th>
+                            <th>{% trans "Request Date" %}</th>
+                            <th>{% trans "Completion Date" %}</th>
+                            <th>{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in requests %}
+                        <tr>
+                            <td>{{ request.tracking_id }}</td>
+                            <td>{{ request.get_request_type_display }}</td>
+                            <td>{{ request.user.email }}</td>
+                            <td>
+                                <span class="badge bg-{{ request.status|lower }}">
+                                    {{ request.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ request.request_date|date:"Y-m-d H:i" }}</td>
+                            <td>{{ request.completion_date|date:"Y-m-d H:i"|default:"-" }}</td>
+                            <td>
+                                <a href="{% url 'gdpr_platform:request_details' request.id %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> {% trans "View" %}
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">{% trans "No data requests found." %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Filter Requests" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="get">
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Status" %}</label>
+                        <select name="status" class="form-select">
+                            <option value="">{% trans "All" %}</option>
+                            {% for value, label in filters.status_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Request Type" %}</label>
+                        <select name="type" class="form-select">
+                            <option value="">{% trans "All" %}</option>
+                            {% for value, label in filters.request_type_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Date Range" %}</label>
+                        <div class="row">
+                            <div class="col">
+                                <input type="date" name="date_from" class="form-control" placeholder="{% trans 'From' %}">
+                            </div>
+                            <div class="col">
+                                <input type="date" name="date_to" class="form-control" placeholder="{% trans 'To' %}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">{% trans "Apply Filters" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Export Report" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="get" action="{% url 'gdpr_platform:export_activity_log' %}">
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Format" %}</label>
+                        <select name="format" class="form-select">
+                            <option value="csv">CSV</option>
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Date Range" %}</label>
+                        <div class="row">
+                            <div class="col">
+                                <input type="date" name="date_from" class="form-control" placeholder="{% trans 'From' %}">
+                            </div>
+                            <div class="col">
+                                <input type="date" name="date_to" class="form-control" placeholder="{% trans 'To' %}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">{% trans "Export" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    // Auto-refresh data every 5 minutes
+    setInterval(function() {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %} 

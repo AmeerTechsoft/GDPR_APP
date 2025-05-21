@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Data Processing Overview" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{% trans "Data Processing Overview" %}</h1>
+        <div>
+            <a href="{% url 'gdpr_platform:processing_activities' %}" class="btn btn-primary">
+                <i class="bi bi-list-check"></i> {% trans "View All Activities" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Active Processes" %}</h6>
+                    <h2 class="card-title mb-0">{{ active_processes }}</h2>
+                    <small class="text-muted">{% trans "currently running" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "High Risk Activities" %}</h6>
+                    <h2 class="card-title mb-0">{{ high_risk_activities }}</h2>
+                    <small class="text-muted">{% trans "require attention" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Data Categories" %}</h6>
+                    <h2 class="card-title mb-0">{{ data_categories }}</h2>
+                    <small class="text-muted">{% trans "being processed" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Compliance Score" %}</h6>
+                    <h2 class="card-title mb-0">{{ compliance_score }}%</h2>
+                    <small class="text-muted">{% trans "processing compliance" %}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Summary -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "Processing by Category" %}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="processingByCategory"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "Legal Basis Distribution" %}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="legalBasisChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">{% trans "Recent Processing Activities" %}</h5>
+            <a href="{% url 'gdpr_platform:processing_activities' %}" class="btn btn-sm btn-link">{% trans "View All" %}</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Activity" %}</th>
+                            <th>{% trans "Category" %}</th>
+                            <th>{% trans "Legal Basis" %}</th>
+                            <th>{% trans "Start Date" %}</th>
+                            <th>{% trans "Risk Level" %}</th>
+                            <th>{% trans "Status" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in recent_activities %}
+                        <tr>
+                            <td>{{ activity.name }}</td>
+                            <td>{{ activity.category }}</td>
+                            <td>{{ activity.legal_basis }}</td>
+                            <td>{{ activity.start_date|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="badge bg-{{ activity.risk_class }}">
+                                    {{ activity.risk_level }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ activity.status_class }}">
+                                    {{ activity.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">{% trans "No recent activities" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Processing by Category Chart
+    const categoryCtx = document.getElementById('processingByCategory').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{
+                data: {{ category_data|safe }},
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                    '#858796', '#5a5c69', '#2e59d9', '#17a673', '#2c9faf'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Legal Basis Chart
+    const legalBasisCtx = document.getElementById('legalBasisChart').getContext('2d');
+    new Chart(legalBasisCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ legal_basis_labels|safe }},
+            datasets: [{
+                data: {{ legal_basis_data|safe }},
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                    '#858796'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Refresh data every 5 minutes
+    setInterval(function() {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %} 

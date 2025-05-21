@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">{% trans "Data Processing Activities" %}</h1>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Data Processing Activities -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "Processing Activities" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if processing_activities %}
+                        <div class="list-group">
+                            {% for activity in processing_activities %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">{{ activity.activity_type }}</h6>
+                                <p class="mb-1">{{ activity.description }}</p>
+                                <small class="text-muted">
+                                    {% trans "Processed on" %}: {{ activity.timestamp|date:"d M Y H:i" }}
+                                </small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">{% trans "No processing activities found." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Cross-Border Transfers -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "Cross-Border Transfers" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if transfers %}
+                        <div class="list-group">
+                            {% for transfer in transfers %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">{{ transfer.recipient_organization }}</h6>
+                                <p class="mb-1">{{ transfer.recipient_country }}</p>
+                                <p class="mb-1"><small>{{ transfer.data_categories }}</small></p>
+                                <small class="text-muted">
+                                    {% trans "Transfer date" %}: {{ transfer.transfer_date|date:"d M Y" }}
+                                </small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">{% trans "No cross-border transfers found." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Retention Settings -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "Data Retention Settings" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if retention_settings %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Data Category" %}</th>
+                                        <th>{% trans "Retention Period" %}</th>
+                                        <th>{% trans "Unit" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category, settings in retention_settings.items %}
+                                    <tr>
+                                        <td>{{ category|title }}</td>
+                                        <td>{{ settings.retention_period }}</td>
+                                        <td>{{ settings.unit }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">{% trans "No retention settings found." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

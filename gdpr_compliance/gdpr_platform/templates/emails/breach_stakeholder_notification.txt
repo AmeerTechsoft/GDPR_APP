@@ -1,0 +1,58 @@
+URGENT: Data Breach Incident Response Update
+
+Dear {{ user.first_name }},
+
+This is to inform you about a data breach incident that requires your immediate attention.
+
+Incident Summary:
+- Breach ID: {{ breach.id }}
+- Severity: {{ breach.severity }}
+- Discovery Date: {{ breach.date_discovered|date:"F j, Y H:i" }}
+- Status: {{ breach.get_status_display }}
+- Affected Users: {{ breach.affected_users.count }}
+
+Response Plan Status:
+{% for phase, details in response_plan.phases.items %}
+{{ phase|title }}:
+- Status: {{ details.status }}
+- Tasks:
+{% for task in details.tasks %}
+  * {{ task }}
+{% endfor %}
+{% endfor %}
+
+Timeline:
+{% for event in response_plan.timeline %}
+- {{ event.timestamp|date:"F j, Y H:i" }}: {{ event.phase|title }} - {{ event.status }}
+{% if event.error %}  Error: {{ event.error }}{% endif %}
+{% endfor %}
+
+Notification Status:
+- Authorities: {{ response_plan.notifications.authorities.status }}
+{% if response_plan.notifications.authorities.due_by %}  Due by: {{ response_plan.notifications.authorities.due_by|date:"F j, Y H:i" }}{% endif %}
+- Affected Users: {{ response_plan.notifications.affected_users.status }}
+{% if response_plan.notifications.affected_users.due_by %}  Due by: {{ response_plan.notifications.affected_users.due_by|date:"F j, Y H:i" }}{% endif %}
+
+Required Actions:
+{% if user.roles.name == 'dpo' %}
+1. Review and approve the incident response plan
+2. Oversee the notification process to authorities
+3. Ensure compliance with GDPR 72-hour notification requirement
+{% elif user.roles.name == 'compliance_officer' %}
+1. Review compliance implications
+2. Prepare documentation for authorities
+3. Update incident response procedures if needed
+{% else %}
+1. Review the incident details
+2. Implement necessary security measures
+3. Support the incident response team as needed
+{% endif %}
+
+For immediate assistance or questions, contact:
+Emergency Response Team: {{ settings.EMERGENCY_CONTACT }}
+Data Protection Officer: {{ settings.DPO_EMAIL }}
+
+Please treat this information as confidential and respond according to our incident response procedures.
+
+Best regards,
+{{ settings.PLATFORM_NAME }} Security Team 

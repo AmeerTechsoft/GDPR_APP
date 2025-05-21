@@ -1,0 +1,313 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/soft-ui-dashboard.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Data Requests Card -->
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Data Requests</p>
+                                <h5 class="font-weight-bolder mb-0">
+                                    {{ data_requests.total }}
+                                    <span class="text-success text-sm font-weight-bolder">
+                                        Last 30 days: {{ data_requests.last_30_days }}
+                                    </span>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
+                                <i class="fas fa-file-alt text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cookie Consents Card -->
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Cookie Consents</p>
+                                <h5 class="font-weight-bolder mb-0">
+                                    {{ cookie_consents.total }}
+                                    <span class="text-success text-sm font-weight-bolder">
+                                        Last 7 days: {{ cookie_consents.last_7_days }}
+                                    </span>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-info shadow text-center border-radius-md">
+                                <i class="fas fa-cookie text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Breaches Card -->
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Data Breaches</p>
+                                <h5 class="font-weight-bolder mb-0">
+                                    {{ data_breaches.unresolved }}
+                                    <span class="text-danger text-sm font-weight-bolder">
+                                        High Severity: {{ data_breaches.high_severity }}
+                                    </span>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-danger shadow text-center border-radius-md">
+                                <i class="fas fa-shield-alt text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Metrics Card -->
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Active Sessions</p>
+                                <h5 class="font-weight-bolder mb-0">
+                                    {{ security_metrics.active_sessions }}
+                                    <span class="text-warning text-sm font-weight-bolder">
+                                        MFA Users: {{ security_metrics.mfa_enabled_users }}
+                                    </span>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-warning shadow text-center border-radius-md">
+                                <i class="fas fa-user-shield text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Data Requests Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6>Data Requests by Type</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="dataRequestsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cookie Consent Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6>Cookie Consent Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="cookieConsentChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Processing Activities -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6>Processing Activities by Type</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="processingActivitiesChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Policy Stats -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col-8">
+                            <h6>Privacy Policy Statistics</h6>
+                        </div>
+                        <div class="col-4 text-end">
+                            <a href="{% url 'admin:gdpr_platform_privacypolicy_changelist' %}" class="btn btn-sm bg-gradient-primary">
+                                Manage Policies
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table align-items-center mb-0">
+                            <tbody>
+                                <tr>
+                                    <td>Total Versions</td>
+                                    <td class="text-end">{{ privacy_policy.total_versions }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Pending Acceptances</td>
+                                    <td class="text-end">{{ privacy_policy.pending_acceptances }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Recent Acceptances (30 days)</td>
+                                    <td class="text-end">{{ privacy_policy.last_30_days_acceptances }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Quick Actions -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'gdpr_platform:data_requests' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-tasks me-2"></i> Manage Data Requests
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'gdpr_platform:manage_breaches' %}" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-exclamation-triangle me-2"></i> View Data Breaches
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:export_compliance_report' %}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-file-export me-2"></i> Export Compliance Report
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:gdpr_platform_auditlog_changelist' %}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-history me-2"></i> View Audit Logs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+{{ block.super }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Data Requests Chart
+    new Chart(document.getElementById('dataRequestsChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: [{% for item in data_requests.by_type %}'{{ item.request_type }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for item in data_requests.by_type %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: [
+                    'rgba(66, 133, 244, 0.8)',
+                    'rgba(219, 68, 55, 0.8)',
+                    'rgba(244, 180, 0, 0.8)',
+                    'rgba(15, 157, 88, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            legend: {
+                position: 'bottom'
+            }
+        }
+    });
+
+    // Cookie Consent Chart
+    new Chart(document.getElementById('cookieConsentChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Analytics', 'Marketing', 'Functional'],
+            datasets: [{
+                label: 'Accepted',
+                data: [
+                    {{ cookie_consents.analytics_accepted }},
+                    {{ cookie_consents.marketing_accepted }},
+                    {{ cookie_consents.functional_accepted }}
+                ],
+                backgroundColor: 'rgba(66, 133, 244, 0.8)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+
+    // Processing Activities Chart
+    new Chart(document.getElementById('processingActivitiesChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: [{% for item in processing_activities.by_type %}'{{ item.activity_type }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for item in processing_activities.by_type %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: [
+                    'rgba(66, 133, 244, 0.8)',
+                    'rgba(219, 68, 55, 0.8)',
+                    'rgba(244, 180, 0, 0.8)',
+                    'rgba(15, 157, 88, 0.8)',
+                    'rgba(104, 109, 224, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            legend: {
+                position: 'bottom'
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

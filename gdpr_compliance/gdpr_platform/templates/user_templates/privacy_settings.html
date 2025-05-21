@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+        <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="fas fa-user-shield me-2"></i>{% trans "Privacy Settings" %}
+                    </h2>
+                    <p class="text-muted">
+                        {% trans "Manage your privacy preferences and data processing settings." %}
+                    </p>
+                    
+                    <form method="post" action="{% url 'gdpr_platform:privacy_settings' %}">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                            <h5>{% trans "Communication Preferences" %}</h5>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="marketingEmails" name="marketing_emails"
+                                       {% if privacy_settings.marketing_emails %}checked{% endif %}>
+                                <label class="form-check-label" for="marketingEmails">
+                                    {% trans "Receive marketing emails" %}
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    {% trans "We'll send you updates about our products and services." %}
+                                </small>
+                            </div>
+                                </div>
+                                
+                        <div class="mb-4">
+                            <h5>{% trans "Data Sharing" %}</h5>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="dataSharing" name="data_sharing"
+                                       {% if privacy_settings.data_sharing %}checked{% endif %}>
+                                <label class="form-check-label" for="dataSharing">
+                                    {% trans "Allow data sharing with partners" %}
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    {% trans "Your data may be shared with our trusted partners for service improvement." %}
+                                </small>
+                            </div>
+                                </div>
+                                
+                        <div class="mb-4">
+                            <h5>{% trans "Analytics" %}</h5>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="analytics" name="analytics"
+                                       {% if privacy_settings.analytics %}checked{% endif %}>
+                                <label class="form-check-label" for="analytics">
+                                    {% trans "Allow analytics tracking" %}
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    {% trans "Help us improve by allowing analytics tracking." %}
+                                </small>
+    </div>
+</div>
+
+                        <div class="alert alert-info mb-4">
+                            <h5 class="alert-heading">{% trans "Your Rights" %}</h5>
+                            <p class="mb-0">
+                                {% trans "You can change these settings at any time. You also have the right to:" %}
+                            </p>
+                            <ul class="mb-0">
+                                <li><a href="{% url 'gdpr_platform:data_export' %}">{% trans "Export your data" %}</a></li>
+                                <li><a href="{% url 'gdpr_platform:data_rectification' %}">{% trans "Update your data" %}</a></li>
+                                <li><a href="{% url 'gdpr_platform:data_deletion' %}">{% trans "Request data deletion" %}</a></li>
+                    </ul>
+                    </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>{% trans "Save Settings" %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

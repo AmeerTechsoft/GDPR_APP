@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Security Dashboard" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h3 mb-4">{% trans "Security Dashboard" %}</h1>
+
+    <!-- Security Status Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Account Security" %}</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-grow-1">
+                            <p class="mb-0">{% trans "Two-Factor Authentication" %}</p>
+                        </div>
+                        <div class="ms-3">
+                            {% if user.two_factor_enabled %}
+                                <span class="badge bg-success">{% trans "Enabled" %}</span>
+                            {% else %}
+                                <span class="badge bg-warning">{% trans "Disabled" %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-0">{% trans "Password Last Changed" %}</p>
+                        </div>
+                        <div class="ms-3">
+                            <small class="text-muted">{{ user.last_password_change|default:"-" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Recent Activity" %}</h5>
+                    <ul class="list-unstyled">
+                        {% for activity in recent_activities %}
+                            <li class="mb-2">
+                                <small class="text-muted">{{ activity.timestamp|date:"SHORT_DATETIME_FORMAT" }}</small>
+                                <br>
+                                {{ activity.description }}
+                            </li>
+                        {% empty %}
+                            <li>{% trans "No recent activity" %}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Security Recommendations" %}</h5>
+                    <ul class="list-unstyled">
+                        {% if not user.two_factor_enabled %}
+                            <li class="mb-2 text-warning">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                {% trans "Enable Two-Factor Authentication" %}
+                            </li>
+                        {% endif %}
+                        {% if user.last_password_change|days_since > 90 %}
+                            <li class="mb-2 text-warning">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                {% trans "Consider changing your password" %}
+                            </li>
+                        {% endif %}
+                        {% if not recommendations %}
+                            <li>{% trans "No security recommendations at this time" %}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Security Settings" %}</h5>
+                    <div class="list-group">
+                        <a href="{% url 'gdpr_platform:setup_2fa' %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{% trans "Two-Factor Authentication" %}</h6>
+                                {% if user.two_factor_enabled %}
+                                    <span class="badge bg-success">{% trans "Enabled" %}</span>
+                                {% else %}
+                                    <span class="badge bg-warning">{% trans "Disabled" %}</span>
+                                {% endif %}
+                            </div>
+                            <p class="mb-1">{% trans "Add an extra layer of security to your account" %}</p>
+                        </a>
+                        <a href="{% url 'gdpr_platform:trusted_devices' %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{% trans "Trusted Devices" %}</h6>
+                                <small>{{ trusted_devices_count }} {% trans "devices" %}</small>
+                            </div>
+                            <p class="mb-1">{% trans "Manage your trusted devices and active sessions" %}</p>
+                        </a>
+                        <a href="{% url 'gdpr_platform:change_password' %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{% trans "Change Password" %}</h6>
+                                <small>{{ user.last_password_change|default:"-" }}</small>
+                            </div>
+                            <p class="mb-1">{% trans "Update your password regularly for better security" %}</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Login History" %}</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "IP Address" %}</th>
+                                    <th>{% trans "Device" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for login in login_history %}
+                                    <tr>
+                                        <td>{{ login.timestamp|date:"SHORT_DATETIME_FORMAT" }}</td>
+                                        <td>{{ login.ip_address }}</td>
+                                        <td>{{ login.user_agent }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ login.status|yesno:'success,danger' }}">
+                                                {{ login.status|yesno:"Success,Failed" }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">{% trans "No login history available" %}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

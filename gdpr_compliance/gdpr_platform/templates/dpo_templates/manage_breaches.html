@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ page_title }} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 text-dark">{{ page_title }}</h1>
+        <button type="button" class="btn btn-warning text-dark" data-bs-toggle="modal" data-bs-target="#reportBreachModal">
+            <i class="bi bi-shield-exclamation"></i> {% trans "Report New Breach" %}
+        </button>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card h-100 bg-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Active Breaches" %}</h6>
+                    <h2 class="card-title mb-0 text-dark">{{ active_breaches }}</h2>
+                    <small class="text-muted">{% trans "requiring attention" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 bg-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Affected Users" %}</h6>
+                    <h2 class="card-title mb-0 text-dark">{{ total_affected_users }}</h2>
+                    <small class="text-muted">{% trans "across all breaches" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 bg-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Average Response Time" %}</h6>
+                    <h2 class="card-title mb-0 text-dark">{{ avg_response_time }}</h2>
+                    <small class="text-muted">{% trans "hours" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 bg-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Compliance Score" %}</h6>
+                    <h2 class="card-title mb-0 text-dark">{{ breach_management_score }}%</h2>
+                    <small class="text-muted">{% trans "breach management" %}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4 bg-white">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="status" class="form-label text-dark">{% trans "Status" %}</label>
+                    <select class="form-select bg-white text-dark" id="status" name="status">
+                        <option value="">{% trans "All Statuses" %}</option>
+                        {% for status in available_statuses %}
+                        <option value="{{ status.0 }}" {% if request.GET.status == status.0 %}selected{% endif %}>
+                            {{ status.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="severity" class="form-label text-dark">{% trans "Severity" %}</label>
+                    <select class="form-select bg-white text-dark" id="severity" name="severity">
+                        <option value="">{% trans "All Severities" %}</option>
+                        {% for severity in available_severities %}
+                        <option value="{{ severity.0 }}" {% if request.GET.severity == severity.0 %}selected{% endif %}>
+                            {{ severity.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_from" class="form-label text-dark">{% trans "Date From" %}</label>
+                    <input type="date" class="form-control bg-white text-dark" id="date_from" name="date_from" 
+                           value="{{ request.GET.date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="date_to" class="form-label text-dark">{% trans "Date To" %}</label>
+                    <input type="date" class="form-control bg-white text-dark" id="date_to" name="date_to" 
+                           value="{{ request.GET.date_to }}">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">{% trans "Apply Filters" %}</button>
+                    <a href="{% url 'gdpr_platform:manage_breaches' %}" class="btn btn-outline-secondary">{% trans "Clear" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Breaches Table -->
+    <div class="card bg-white">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr class="text-dark">
+                            <th>{% trans "ID" %}</th>
+                            <th>{% trans "Date Reported" %}</th>
+                            <th>{% trans "Type" %}</th>
+                            <th>{% trans "Severity" %}</th>
+                            <th>{% trans "Affected Users" %}</th>
+                            <th>{% trans "Status" %}</th>
+                            <th>{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for breach in breaches %}
+                        <tr class="text-dark">
+                            <td>{{ breach.id|truncatechars:8 }}</td>
+                            <td>{{ breach.date_reported|date:"Y-m-d H:i" }}</td>
+                            <td>{{ breach.get_breach_type_display }}</td>
+                            <td>
+                                <span class="badge {% if breach.severity == 'critical' %}bg-danger{% elif breach.severity == 'high' %}bg-warning text-dark{% elif breach.severity == 'medium' %}bg-info text-dark{% else %}bg-success{% endif %}">
+                                    {{ breach.get_severity_display }}
+                                </span>
+                            </td>
+                            <td>{{ breach.affected_users.count }}</td>
+                            <td>
+                                <span class="badge {% if breach.status == 'investigating' %}bg-warning text-dark{% elif breach.status == 'contained' %}bg-info text-dark{% elif breach.status == 'resolved' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ breach.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'gdpr_platform:breach_details' breach_id=breach.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if can_change %}
+                                    <button type="button" class="btn btn-sm btn-outline-warning"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#updateBreachModal"
+                                            data-breach-id="{{ breach.id }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">{% trans "No breaches reported" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if breaches.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if breaches.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link text-primary" href="?page={{ breaches.previous_page_number }}">
+                            {% trans "Previous" %}
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in breaches.paginator.page_range %}
+                    <li class="page-item {% if breaches.number == num %}active{% endif %}">
+                        <a class="page-link {% if breaches.number == num %}bg-primary border-primary{% else %}text-primary{% endif %}" 
+                           href="?page={{ num }}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    {% if breaches.has_next %}
+                    <li class="page-item">
+                        <a class="page-link text-primary" href="?page={{ breaches.next_page_number }}">
+                            {% trans "Next" %}
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Report Breach Modal -->
+<div class="modal fade" id="reportBreachModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-white">
+            <div class="modal-header">
+                <h5 class="modal-title text-dark">{% trans "Report Data Breach" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'gdpr_platform:manage_breaches' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="breach_type" class="form-label text-dark">{% trans "Breach Type" %}</label>
+                        <select class="form-select bg-white text-dark" id="breach_type" name="breach_type" required>
+                            <option value="unauthorized_access">{% trans "Unauthorized Access" %}</option>
+                            <option value="data_leak">{% trans "Data Leak" %}</option>
+                            <option value="system_breach">{% trans "System Breach" %}</option>
+                            <option value="malware">{% trans "Malware" %}</option>
+                            <option value="phishing">{% trans "Phishing" %}</option>
+                            <option value="insider_threat">{% trans "Insider Threat" %}</option>
+                            <option value="other">{% trans "Other" %}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="breach_severity" class="form-label text-dark">{% trans "Severity" %}</label>
+                        <select class="form-select bg-white text-dark" id="breach_severity" name="severity" required>
+                            <option value="low">{% trans "Low Risk" %}</option>
+                            <option value="medium">{% trans "Medium Risk" %}</option>
+                            <option value="high">{% trans "High Risk" %}</option>
+                            <option value="critical">{% trans "Critical Risk" %}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="breach_description" class="form-label text-dark">{% trans "Description" %}</label>
+                        <textarea class="form-control bg-white text-dark" id="breach_description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="affected_data" class="form-label text-dark">{% trans "Affected Data Categories" %}</label>
+                        <select class="form-select bg-white text-dark" id="affected_data" name="affected_data_categories" multiple required>
+                            <option value="personal_information">{% trans "Personal Information" %}</option>
+                            <option value="contact_details">{% trans "Contact Details" %}</option>
+                            <option value="financial_data">{% trans "Financial Data" %}</option>
+                            <option value="authentication_data">{% trans "Authentication Data" %}</option>
+                            <option value="usage_data">{% trans "Usage Data" %}</option>
+                            <option value="sensitive_data">{% trans "Sensitive Data" %}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="impact_assessment" class="form-label text-dark">{% trans "Impact Assessment" %}</label>
+                        <textarea class="form-control bg-white text-dark" id="impact_assessment" name="impact_assessment" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-primary">{% trans "Report Breach" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Update Breach Modal -->
+<div class="modal fade" id="updateBreachModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-white">
+            <div class="modal-header">
+                <h5 class="modal-title text-dark">{% trans "Update Breach Status" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'gdpr_platform:update_breach_status' %}">
+                {% csrf_token %}
+                <input type="hidden" name="breach_id" id="update_breach_id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="update_status" class="form-label text-dark">{% trans "New Status" %}</label>
+                        <select class="form-select bg-white text-dark" id="update_status" name="status" required>
+                            <option value="investigating">{% trans "Investigating" %}</option>
+                            <option value="contained">{% trans "Contained" %}</option>
+                            <option value="resolved">{% trans "Resolved" %}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="update_notes" class="form-label text-dark">{% trans "Update Notes" %}</label>
+                        <textarea class="form-control bg-white text-dark" id="update_notes" name="notes" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-primary">{% trans "Update Status" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const updateBreachModal = document.getElementById('updateBreachModal');
+        if (updateBreachModal) {
+            updateBreachModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const breachId = button.getAttribute('data-breach-id');
+                document.getElementById('update_breach_id').value = breachId;
+            });
+        }
+    });
+</script>
+{% endblock %} 

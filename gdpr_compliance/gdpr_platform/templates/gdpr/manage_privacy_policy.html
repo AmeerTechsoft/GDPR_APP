@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Manage Privacy Policy" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="h3 mb-4">{% trans "Manage Privacy Policy" %}</h1>
+
+                    <!-- Current Policy Status -->
+                    <div class="alert {% if privacy_policy.is_published %}alert-success{% else %}alert-warning{% endif %} mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="alert-heading mb-1">
+                                    {% if privacy_policy.is_published %}
+                                        {% trans "Current Policy" %} (v{{ privacy_policy.version }})
+                                    {% else %}
+                                        {% trans "Draft Policy" %} (v{{ privacy_policy.version }})
+                                    {% endif %}
+                                </h5>
+                                <p class="mb-0">
+                                    {% trans "Last Updated" %}: {{ privacy_policy.last_updated|date:"F j, Y" }}
+                                </p>
+                            </div>
+                            <div>
+                                {% if privacy_policy.is_published %}
+                                    <span class="badge bg-success">{% trans "Published" %}</span>
+                                {% else %}
+                                    <span class="badge bg-warning">{% trans "Draft" %}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Policy Editor -->
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="policy_content" class="form-label">{% trans "Policy Content" %}</label>
+                            <textarea class="form-control" id="policy_content" name="content" rows="20">{{ privacy_policy.content }}</textarea>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="effective_date" class="form-label">{% trans "Effective Date" %}</label>
+                                <input type="date" class="form-control" id="effective_date" name="effective_date" 
+                                       value="{{ privacy_policy.effective_date|date:'Y-m-d' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="version" class="form-label">{% trans "Version" %}</label>
+                                <input type="text" class="form-control" id="version" name="version" 
+                                       value="{{ privacy_policy.version }}" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="requires_consent" name="requires_consent"
+                                   {% if privacy_policy.requires_consent %}checked{% endif %}>
+                            <label class="form-check-label" for="requires_consent">
+                                {% trans "Require users to accept updated policy" %}
+                            </label>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="action" value="save" class="btn btn-primary">
+                                {% trans "Save Draft" %}
+                            </button>
+                            <button type="submit" name="action" value="publish" class="btn btn-success">
+                                {% trans "Publish" %}
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Policy History -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">{% trans "Policy History" %}</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Version" %}</th>
+                                        <th>{% trans "Published Date" %}</th>
+                                        <th>{% trans "Effective Date" %}</th>
+                                        <th>{% trans "Status" %}</th>
+                                        <th>{% trans "Actions" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for policy in policy_history %}
+                                    <tr>
+                                        <td>v{{ policy.version }}</td>
+                                        <td>{{ policy.published_date|date:"SHORT_DATETIME_FORMAT" }}</td>
+                                        <td>{{ policy.effective_date|date:"SHORT_DATE_FORMAT" }}</td>
+                                        <td>
+                                            {% if policy.is_current %}
+                                                <span class="badge bg-success">{% trans "Current" %}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{% trans "Archived" %}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-primary"
+                                                        onclick="viewPolicy('{{ policy.id }}')">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                        onclick="restorePolicy('{{ policy.id }}')">
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            {% trans "No policy history available" %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Policy Modal -->
+<div class="modal fade" id="viewPolicyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "View Policy Version" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="policyContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Initialize rich text editor
+    ClassicEditor
+        .create(document.querySelector('#policy_content'))
+        .catch(error => {
+            console.error(error);
+        });
+
+    // View policy version
+    function viewPolicy(policyId) {
+        fetch(`{% url 'gdpr_platform:get_policy_version' %}?id=${policyId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('policyContent').innerHTML = data.content;
+                new bootstrap.Modal(document.getElementById('viewPolicyModal')).show();
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Restore policy version
+    function restorePolicy(policyId) {
+        if (confirm('{% trans "Are you sure you want to restore this version? Current draft will be overwritten." %}')) {
+            fetch(`{% url 'gdpr_platform:restore_policy_version' %}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ policy_id: policyId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ck-editor__editable {
+        min-height: 400px;
+    }
+</style>
+{% endblock %}
+{% endblock %} 

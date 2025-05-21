@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Rights Dashboard - GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Data Rights Dashboard</h2>
+            
+            <!-- Data Rights Overview -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Your Data Rights</h5>
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-download fa-2x text-primary mb-2"></i>
+                                <h6>Right to Access</h6>
+                                <a href="{% url 'gdpr_platform:data_export' %}" class="btn btn-sm btn-outline-primary">Export Data</a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-edit fa-2x text-info mb-2"></i>
+                                <h6>Right to Rectification</h6>
+                                <a href="{% url 'gdpr_platform:data_rectification' %}" class="btn btn-sm btn-outline-info">Update Data</a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-trash fa-2x text-danger mb-2"></i>
+                                <h6>Right to Erasure</h6>
+                                <a href="{% url 'gdpr_platform:data_deletion' %}" class="btn btn-sm btn-outline-danger">Request Deletion</a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-ban fa-2x text-warning mb-2"></i>
+                                <h6>Right to Object</h6>
+                                <a href="{% url 'gdpr_platform:privacy_settings' %}" class="btn btn-sm btn-outline-warning">Manage Preferences</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Recent Data Requests -->
+                <div class="col-12 col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-clipboard-list me-2 text-primary"></i>Recent Data Requests
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for request in data_requests %}
+                                        <tr>
+                                            <td>{{ request.get_request_type_display }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ request.get_status_color }}">
+                                                    {{ request.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ request.request_date|date:"M d, Y" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted">No recent requests</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consent Status -->
+                <div class="col-12 col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-check-circle me-2 text-success"></i>Consent Status
+                            </h5>
+                            <ul class="list-group">
+                                <!-- Cookie Consent -->
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                        <h6 class="mb-0">Cookie Preferences</h6>
+                                        <small class="text-muted">Last updated: {{ cookie_consent.timestamp|date:"M d, Y" }}</small>
+                                        </div>
+                                    <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cookieModal">
+                                        Update
+                                    </a>
+                                </li>
+                                <!-- Privacy Policy -->
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">Privacy Policy</h6>
+                                        <small class="text-muted">
+                                            {% if policy_consent %}
+                                            Accepted: {{ policy_consent.consented_at|date:"M d, Y" }}
+                                            {% else %}
+                                            Not accepted
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    <a href="{% url 'gdpr_platform:privacy_policy' %}" class="btn btn-sm btn-outline-primary">
+                                        View
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Breach Notifications -->
+                {% if breach_notifications %}
+                <div class="col-12">
+                    <div class="card border-danger">
+                        <div class="card-body">
+                            <h5 class="card-title text-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Data Breach Notifications
+                            </h5>
+                            <div class="list-group">
+                                {% for notification in breach_notifications %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ notification.breach.title }}</h6>
+                                        <small>{{ notification.notified_at|date:"M d, Y" }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ notification.breach.description }}</p>
+                                    <small class="text-muted">Affected data: {{ notification.breach.affected_data }}</small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<!-- Cookie Preferences Modal -->
+<div class="modal fade" id="cookieModal" tabindex="-1" aria-labelledby="cookieModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cookieModalLabel">Update Cookie Preferences</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cookiePreferencesForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="necessaryCookies" checked disabled>
+                            <label class="form-check-label" for="necessaryCookies">
+                                Necessary Cookies (Required)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="analyticsCookies" 
+                                   {% if cookie_consent.analytics_cookies %}checked{% endif %}>
+                            <label class="form-check-label" for="analyticsCookies">
+                                Analytics Cookies
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="marketingCookies"
+                                   {% if cookie_consent.marketing_cookies %}checked{% endif %}>
+                            <label class="form-check-label" for="marketingCookies">
+                                Marketing Cookies
+                            </label>
+                        </div>
+                    </div>
+                </form>
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveCookiePreferences">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#saveCookiePreferences').click(function() {
+        $.ajax({
+            url: '{% url "gdpr_platform:update_cookie_consent" %}',
+            method: 'POST',
+            data: {
+                csrfmiddlewaretoken: $('[name=csrfmiddlewaretoken]').val(),
+                analytics_cookies: $('#analyticsCookies').is(':checked'),
+                marketing_cookies: $('#marketingCookies').is(':checked')
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    $('#cookieModal').modal('hide');
+                    location.reload();
+                }
+            },
+            error: function(xhr) {
+                alert('Error updating preferences. Please try again.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Shield Background -->
+    <path d="M400 50L700 150V350C700 450 400 550 400 550C400 550 100 450 100 350V150L400 50Z" fill="#FF0080" fill-opacity="0.1"/>
+    
+    <!-- Shield Border -->
+    <path d="M400 50L700 150V350C700 450 400 550 400 550C400 550 100 450 100 350V150L400 50Z" stroke="#FF0080" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Lock Icon -->
+    <g transform="translate(300,200)">
+        <rect x="0" y="40" width="200" height="160" rx="20" fill="#7928CA"/>
+        <path d="M40 40V20C40 -20 160 -20 160 20V40" stroke="#FF0080" stroke-width="12" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Check Marks -->
+    <g transform="translate(250,150)">
+        <circle cx="50" cy="50" r="20" fill="#FF0080"/>
+        <path d="M40 50L47 57L60 43" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    
+    <g transform="translate(500,150)">
+        <circle cx="50" cy="50" r="20" fill="#FF0080"/>
+        <path d="M40 50L47 57L60 43" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    
+    <g transform="translate(375,400)">
+        <circle cx="50" cy="50" r="20" fill="#FF0080"/>
+        <path d="M40 50L47 57L60 43" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    
+    <!-- Data Flow Lines -->
+    <g stroke="#7928CA" stroke-width="2" stroke-dasharray="4 4">
+        <path d="M300 200C200 150 150 250 200 350"/>
+        <path d="M500 200C600 150 650 250 600 350"/>
+        <path d="M400 450C300 400 250 500 300 550"/>
+        <path d="M400 450C500 400 550 500 500 550"/>
+    </g>
+    
+    <!-- Decorative Circles -->
+    <g fill="#FF0080" fill-opacity="0.1">
+        <circle cx="150" cy="100" r="10"/>
+        <circle cx="650" cy="100" r="10"/>
+        <circle cx="400" cy="500" r="10"/>
+        <circle cx="200" cy="300" r="10"/>
+        <circle cx="600" cy="300" r="10"/>
+    </g>
+</svg> 

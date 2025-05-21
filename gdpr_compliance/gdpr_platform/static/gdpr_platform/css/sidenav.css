@@ -1,0 +1,431 @@
+/* Sidenav Custom Styles */
+.sidenav {
+    width: 250px;
+    background: white;
+    box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .15);
+    z-index: 1050;
+    transition: transform 0.3s ease;
+}
+
+.sidenav .navbar-brand {
+    padding: 1rem 2rem;
+}
+
+.sidenav .nav-link {
+    margin: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: #67748e;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.sidenav .nav-link i {
+    font-size: 1rem;
+    margin-right: 0.75rem;
+    width: 1.5rem;
+    text-align: center;
+}
+
+.sidenav .nav-link.active {
+    background: linear-gradient(310deg, #7928CA 0%, #FF0080 100%);
+    color: white;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidenav .nav-link.active i,
+.sidenav .nav-link.active .nav-link-text {
+    color: white;
+}
+
+.sidenav .nav-link:hover:not(.active) {
+    background: rgba(121, 40, 202, 0.1);
+    color: #7928CA;
+}
+
+.sidenav .nav-link:hover:not(.active) i {
+    color: #7928CA;
+}
+
+.sidenav .nav-link-text {
+    font-size: 0.875rem;
+}
+
+/* Submenu Styles */
+.sidenav .collapse .nav {
+    padding-left: 0;
+}
+
+.sidenav .collapse .nav-link {
+    padding-left: 1rem;
+    font-size: 0.8125rem;
+}
+
+.sidenav .collapse .nav-item {
+    position: relative;
+}
+
+.sidenav .collapse .nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    height: 100%;
+    width: 1px;
+    background: rgba(121, 40, 202, 0.1);
+    display: none;
+}
+
+.sidenav .collapse.show .nav-item::before {
+    display: block;
+}
+
+/* Role-specific colors */
+.sidenav .admin-section .nav-link.active {
+    background: linear-gradient(310deg, #2152ff 0%, #21d4fd 100%);
+}
+
+.sidenav .dpo-section .nav-link.active {
+    background: linear-gradient(310deg, #f53939 0%, #fbcf33 100%);
+}
+
+.sidenav .compliance-section .nav-link.active {
+    background: linear-gradient(310deg, #17ad37 0%, #98ec2d 100%);
+}
+
+/* Mobile Sidenav */
+@media (max-width: 768px) {
+    .sidenav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100vh;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidenav.show {
+        transform: translateX(0);
+    }
+    
+    .sidenav-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.3);
+        z-index: 1040;
+        display: none;
+    }
+    
+    .sidenav-backdrop.show {
+        display: block;
+    }
+}
+
+/* Active State Indicators */
+.sidenav .nav-link[aria-expanded="true"] {
+    background: rgba(121, 40, 202, 0.1);
+    color: #7928CA;
+}
+
+.sidenav .nav-link[aria-expanded="true"] i {
+    color: #7928CA;
+}
+
+/* Animation for submenu */
+.sidenav .collapse {
+    transition: all 0.35s ease;
+}
+
+.sidenav .collapse:not(.show) {
+    display: none;
+}
+
+.sidenav .collapse.show {
+    display: block;
+}
+
+/* Improve spacing for nested items */
+.sidenav .collapse .nav-link {
+    padding-left: 0.5rem;
+    margin-left: 0.5rem;
+}
+
+/* Fix for checkboxes in sidenav if any */
+.sidenav .form-check-input:checked {
+    background-color: #7928CA !important;
+    border-color: #7928CA !important;
+}
+
+.sidenav-header {
+    padding: 0.5rem;
+}
+
+.sidenav-header .navbar-brand {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #344767;
+}
+
+.sidenav-header img {
+    height: 32px;
+    width: auto;
+}
+
+.sidenav .navbar-nav,
+.sidenav .nav-item,
+.sidenav .collapse .nav,
+.sidenav .collapse .nav-item,
+.sidenav .collapse.show .nav,
+.sidenav .collapse.show .nav-item,
+.sidenav .collapsing .nav,
+.sidenav .collapsing .nav-item,
+.sidenav ul,
+.sidenav li,
+.sidenav .collapse ul,
+.sidenav .collapse li,
+.sidenav .collapse.show ul,
+.sidenav .collapse.show li,
+.sidenav .nav {
+    list-style: none !important;
+    list-style-type: none !important;
+    margin: 0;
+    padding: 0;
+}
+
+.sidenav .nav-link:hover {
+    background-color: rgba(94, 114, 228, 0.1);
+    color: #344767;
+}
+
+.sidenav .nav-link.active i,
+.sidenav .nav-link.active span {
+    color: #fff !important;
+}
+
+/* Remove hover effect from active links */
+.sidenav .nav-link.active:hover {
+    background-color: inherit;
+    color: #fff;
+}
+
+/* Ensure only one active state at a time */
+.sidenav .nav-link.active ~ .nav-link.active {
+    background-color: transparent;
+    color: #344767;
+}
+
+.sidenav .nav-link.active ~ .nav-link.active i,
+.sidenav .nav-link.active ~ .nav-link.active span {
+    color: #344767;
+}
+
+.sidenav .nav-link[data-bs-toggle="collapse"] {
+    position: relative;
+}
+
+.sidenav .nav-link[data-bs-toggle="collapse"]::after {
+    content: '\f107';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    margin-left: auto;
+}
+
+.sidenav .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]::after {
+    transform: rotate(180deg);
+}
+
+.sidenav .collapse .nav-item,
+.sidenav .collapse.show .nav-item {
+    padding-left: 0.25rem;
+}
+
+.sidenav .collapse .nav-link {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+}
+
+/* Specific colors for each nav item when active */
+.sidenav .navbar-nav .nav-item .nav-link[href*="dashboard"].active {
+    background-color: #5e72e4 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="data_export"].active {
+    background-color: #2dce89 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="data_rectification"].active {
+    background-color: #fb6340 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="data_deletion"].active {
+    background-color: #f5365c !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="setup_2fa"].active {
+    background-color: #11cdef !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="trusted_devices"].active {
+    background-color: #172b4d !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="activity_log"].active {
+    background-color: #8965e0 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="privacy_settings"].active {
+    background-color: #ffd600 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="privacy_policy"].active {
+    background-color: #fb6340 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="data_processing"].active {
+    background-color: #2dce89 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="cross_border_transfers"].active {
+    background-color: #5e72e4 !important;
+}
+
+.sidenav .navbar-nav .nav-item .nav-link[href*="settings"].active {
+    background-color: #11cdef !important;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .sidenav {
+        background-color: #1a2035;
+    }
+
+    .sidenav-header .navbar-brand,
+    .sidenav .nav-link {
+        color: #fff;
+    }
+
+    .sidenav .nav-link:hover {
+        background-color: rgba(94, 114, 228, 0.2);
+        color: #fff;
+    }
+
+    .sidenav hr.horizontal {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1199.98px) {
+    .sidenav {
+        transform: translateX(-100%);
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .sidenav.show {
+        transform: translateX(0);
+    }
+
+    .sidenav-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.3);
+        z-index: 1040;
+        display: none;
+    }
+
+    .sidenav-backdrop.show {
+        display: block;
+    }
+}
+
+.nav {
+    list-style: none !important;
+    list-style-type: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.navbar-vertical .navbar-nav .nav-item .collapse .nav .nav-item .nav-link:before,
+.navbar-vertical .navbar-nav .nav-item .collapsing .nav .nav-item .nav-link:before {
+    content: none !important;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+/* Override any other active states */
+.sidenav .navbar-nav .nav-item .nav-link.active i,
+.sidenav .navbar-nav .nav-item .nav-link.active span,
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link.active i,
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link.active span {
+    color: #fff !important;
+}
+
+/* Remove hover effects from active links */
+.sidenav .navbar-nav .nav-item .nav-link.active:hover,
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link.active:hover {
+    color: #fff !important;
+}
+
+/* Specific colors for individual nav items with higher specificity */
+.sidenav .navbar-nav .nav-item .nav-link[href*="dashboard"].active {
+    background-color: #5e72e4 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="data_export"].active {
+    background-color: #2dce89 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="data_rectification"].active {
+    background-color: #fb6340 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="data_deletion"].active {
+    background-color: #f5365c !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="setup_2fa"].active {
+    background-color: #11cdef !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="trusted_devices"].active {
+    background-color: #172b4d !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="activity_log"].active {
+    background-color: #8965e0 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="privacy_settings"].active {
+    background-color: #ffd600 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="privacy_policy"].active {
+    background-color: #fb6340 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="data_processing"].active {
+    background-color: #2dce89 !important;
+}
+
+.sidenav .navbar-nav .nav-item .collapse .nav .nav-item .nav-link[href*="cross_border_transfers"].active {
+    background-color: #5e72e4 !important;
+}
+
+.sidenav .navbar-nav .nav-item .nav-link[href*="settings"].active {
+    background-color: #11cdef !important;
+} 

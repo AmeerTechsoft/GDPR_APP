@@ -1,0 +1,115 @@
+{% load i18n %}
+
+<div class="modal fade" id="marketingPreferencesModal" tabindex="-1" aria-labelledby="marketingPreferencesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="marketingPreferencesModalLabel">{% trans "Marketing Preferences" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="marketingPreferencesForm" method="post" action="{% url 'gdpr_platform:update_marketing_preferences' %}">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {% trans "Control how we communicate with you and what information you receive from us." %}
+                    </div>
+
+                    <!-- Email Marketing -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">{% trans "Email Marketing" %}</h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="emailMarketing" name="email_marketing" {% if marketing_preferences.email_marketing %}checked{% endif %}>
+                            </div>
+                        </div>
+                        <p class="text-muted small">{% trans "Receive updates, newsletters, and promotional content via email." %}</p>
+                    </div>
+
+                    <!-- Product Updates -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">{% trans "Product Updates" %}</h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="productUpdates" name="product_updates" {% if marketing_preferences.product_updates %}checked{% endif %}>
+                            </div>
+                        </div>
+                        <p class="text-muted small">{% trans "Stay informed about new features, improvements, and platform updates." %}</p>
+                    </div>
+
+                    <!-- Service Notifications -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">{% trans "Service Notifications" %}</h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="serviceNotifications" checked disabled>
+                            </div>
+                        </div>
+                        <p class="text-muted small">{% trans "Important service-related notifications cannot be disabled as they are essential for your account." %}</p>
+                    </div>
+
+                    <!-- Third-party Marketing -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">{% trans "Third-party Marketing" %}</h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="thirdPartyMarketing" name="third_party_marketing" {% if marketing_preferences.third_party_marketing %}checked{% endif %}>
+                            </div>
+                        </div>
+                        <p class="text-muted small">{% trans "Allow us to share your information with trusted partners for marketing purposes." %}</p>
+                    </div>
+
+                    <!-- Communication Frequency -->
+                    <div class="mb-4">
+                        <h6 class="mb-2">{% trans "Communication Frequency" %}</h6>
+                        <select class="form-select" name="communication_frequency">
+                            <option value="daily" {% if marketing_preferences.communication_frequency == 'daily' %}selected{% endif %}>{% trans "Daily" %}</option>
+                            <option value="weekly" {% if marketing_preferences.communication_frequency == 'weekly' %}selected{% endif %}>{% trans "Weekly" %}</option>
+                            <option value="monthly" {% if marketing_preferences.communication_frequency == 'monthly' %}selected{% endif %}>{% trans "Monthly" %}</option>
+                            <option value="quarterly" {% if marketing_preferences.communication_frequency == 'quarterly' %}selected{% endif %}>{% trans "Quarterly" %}</option>
+                        </select>
+                        <p class="text-muted small mt-2">{% trans "Choose how often you would like to receive marketing communications." %}</p>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Close" %}</button>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('marketingPreferencesForm').submit();">{% trans "Save Preferences" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('marketingPreferencesForm');
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]:not([disabled])');
+    const frequencySelect = form.querySelector('select[name="communication_frequency"]');
+    
+    // Handle checkbox changes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', submitForm);
+    });
+
+    // Handle frequency changes
+    frequencySelect.addEventListener('change', submitForm);
+
+    function submitForm() {
+        const formData = new FormData(form);
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        }).then(response => {
+            if (response.ok) {
+                // Show success message
+                const toast = new bootstrap.Toast(document.getElementById('marketingPreferencesUpdated'));
+                toast.show();
+            }
+        });
+    }
+});
+</script> 

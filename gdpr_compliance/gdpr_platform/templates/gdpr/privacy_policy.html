@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Privacy Policy" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="h3 mb-4">{% trans "Privacy Policy" %}</h1>
+                    
+                    <!-- Last Updated -->
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <strong>{% trans "Last Updated" %}:</strong> {{ privacy_policy.last_updated|date:"F j, Y" }}
+                                {% if privacy_policy.requires_consent %}
+                                    <span class="badge bg-warning ms-2">{% trans "Action Required" %}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Policy Content -->
+                    <div class="policy-content mb-4">
+                        {{ privacy_policy.content|safe }}
+                    </div>
+
+                    <!-- Data Collection Section -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">{% trans "Data We Collect" %}</h5>
+                            </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Data Category" %}</th>
+                                            <th>{% trans "Purpose" %}</th>
+                                            <th>{% trans "Retention Period" %}</th>
+                                            <th>{% trans "Legal Basis" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for category in data_categories %}
+                                        <tr>
+                                            <td>{{ category.name }}</td>
+                                            <td>{{ category.purpose }}</td>
+                                            <td>{{ category.retention_period }}</td>
+                                            <td>{{ category.legal_basis }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                                </div>
+                    </div>
+
+                    <!-- Your Rights Section -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">{% trans "Your Rights" %}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                            <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-3">
+                                            <i class="bi bi-eye me-2"></i>
+                                            <strong>{% trans "Right to Access" %}</strong>
+                                            <p class="text-muted small mb-0">{% trans "You can request access to your personal data" %}</p>
+                                        </li>
+                                        <li class="mb-3">
+                                            <i class="bi bi-pencil me-2"></i>
+                                            <strong>{% trans "Right to Rectification" %}</strong>
+                                            <p class="text-muted small mb-0">{% trans "You can request corrections to your data" %}</p>
+                                        </li>
+                                        <li class="mb-3">
+                                            <i class="bi bi-trash me-2"></i>
+                                            <strong>{% trans "Right to Erasure" %}</strong>
+                                            <p class="text-muted small mb-0">{% trans "You can request deletion of your data" %}</p>
+                                        </li>
+                                    </ul>
+                            </div>
+                            <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-3">
+                                            <i class="bi bi-stop-circle me-2"></i>
+                                            <strong>{% trans "Right to Object" %}</strong>
+                                            <p class="text-muted small mb-0">{% trans "You can object to data processing" %}</p>
+                                        </li>
+                                        <li class="mb-3">
+                                            <i class="bi bi-download me-2"></i>
+                                            <strong>{% trans "Right to Portability" %}</strong>
+                                            <p class="text-muted small mb-0">{% trans "You can download your data" %}</p>
+                                        </li>
+                                        <li class="mb-3">
+                                            <i class="bi bi-shield-check me-2"></i>
+                                            <strong>{% trans "Right to Complain" %}</strong>
+                                            <p class="text-muted small mb-0">{% trans "You can file a complaint with authorities" %}</p>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">{% trans "Contact Information" %}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                            <div class="col-md-6">
+                                    <h6>{% trans "Data Protection Officer" %}</h6>
+                                    <p>{{ dpo_contact.name }}<br>
+                                    {{ dpo_contact.email }}<br>
+                                    {{ dpo_contact.phone }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                    <h6>{% trans "Supervisory Authority" %}</h6>
+                                    <p>{{ authority_contact.name }}<br>
+                                    {{ authority_contact.website }}<br>
+                                    {{ authority_contact.phone }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if privacy_policy.requires_consent %}
+                    <!-- Consent Form -->
+                    <form method="post" action="{% url 'gdpr_platform:accept_privacy_policy' %}">
+                        {% csrf_token %}
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="accept_policy" name="accept_policy" required>
+                            <label class="form-check-label" for="accept_policy">
+                                {% trans "I have read and accept the updated Privacy Policy" %}
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">{% trans "Accept Policy" %}</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    .policy-content {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    .policy-content h2 {
+        font-size: 1.5rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    .policy-content h3 {
+        font-size: 1.25rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .policy-content p {
+        margin-bottom: 1rem;
+    }
+    .policy-content ul {
+        margin-bottom: 1rem;
+        padding-left: 1.5rem;
+    }
+</style>
+{% endblock %}
+{% endblock %} 

@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Admin Dashboard" %} | GDPR Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Card Animations and Styling */
+    .card {
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .15);
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175);
+    }
+    
+    /* Statistics Cards */
+    .card-body {
+        padding: 1.5rem;
+    }
+    .card-subtitle {
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+    .card-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #344767;
+    }
+    
+    /* Progress Bars */
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background-color: #e9ecef;
+        margin: 1rem 0;
+    }
+    .progress-bar {
+        border-radius: 4px;
+        transition: width 1s ease;
+    }
+    
+    /* Quick Actions */
+    .btn-outline-primary {
+        border-width: 2px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-outline-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    /* System Status Icons */
+    .status-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    .status-healthy {
+        color: #2dce89;
+    }
+    .status-warning {
+        color: #fb6340;
+    }
+    .status-error {
+        color: #f5365c;
+    }
+    
+    /* List Styling */
+    .list-unstyled li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .list-unstyled li:last-child {
+        border-bottom: none;
+    }
+    .list-unstyled a {
+        color: #67748e;
+        transition: all 0.2s ease;
+    }
+    .list-unstyled a:hover {
+        color: #344767;
+        text-decoration: none;
+        padding-left: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Overview Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Total Users" %}</h6>
+                    <h2 class="card-title mb-0">{{ total_users }}</h2>
+                    <small class="text-muted">{{ active_users }} active</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Data Requests" %}</h6>
+                    <h2 class="card-title mb-0">{{ pending_requests }}</h2>
+                    <small class="text-muted">{% trans "pending requests" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "Data Breaches" %}</h6>
+                    <h2 class="card-title mb-0">{{ active_breaches }}</h2>
+                    <small class="text-muted">{% trans "active incidents" %}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{% trans "System Health" %}</h6>
+                    <h2 class="card-title mb-0">{{ system_health }}%</h2>
+                    <small class="text-muted">{% trans "system status" %}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "Quick Actions" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <a href="{% url 'gdpr_platform:user_management' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-people"></i> {% trans "Manage Users" %}
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'gdpr_platform:system_settings' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-gear"></i> {% trans "System Settings" %}
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'gdpr_platform:manage_privacy_policy' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-shield-check"></i> {% trans "Privacy Policy" %}
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'gdpr_platform:activity_log' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-journal-text"></i> {% trans "Activity Log" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "Recent Activity" %}</h5>
+                    <a href="{% url 'gdpr_platform:activity_log' %}" class="btn btn-sm btn-link">{% trans "View All" %}</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Time" %}</th>
+                                    <th>{% trans "User" %}</th>
+                                    <th>{% trans "Action" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_activity %}
+                                <tr>
+                                    <td>{{ log.timestamp|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ log.user.email }}</td>
+                                    <td>{{ log.action }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">{% trans "No recent activity" %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "Pending Data Requests" %}</h5>
+                    <a href="{% url 'gdpr_platform:data_requests' %}" class="btn btn-sm btn-link">{% trans "View All" %}</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Type" %}</th>
+                                    <th>{% trans "User" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in pending_data_requests %}
+                                <tr>
+                                    <td>{{ request.request_date|date:"Y-m-d" }}</td>
+                                    <td>{{ request.get_request_type_display }}</td>
+                                    <td>{{ request.user.email }}</td>
+                                    <td>
+                                        <span class="badge bg-warning">{{ request.get_status_display }}</span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">{% trans "No pending requests" %}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "System Status" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <h6>{% trans "Database Status" %}</h6>
+                            <div class="progress mb-2">
+                                <div class="progress-bar" role="progressbar" style="width: {{ db_health }}%">
+                                    {{ db_health }}%
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ db_status_message }}</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>{% trans "Cache Status" %}</h6>
+                            <div class="progress mb-2">
+                                <div class="progress-bar" role="progressbar" style="width: {{ cache_health }}%">
+                                    {{ cache_health }}%
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ cache_status_message }}</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>{% trans "Storage Status" %}</h6>
+                            <div class="progress mb-2">
+                                <div class="progress-bar" role="progressbar" style="width: {{ storage_health }}%">
+                                    {{ storage_health }}%
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ storage_status_message }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Django Admin Integration -->
+    <div class="col-12 mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{% trans "Django Admin Models" %}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <h6>{% trans "User Management" %}</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="{% url 'admin:gdpr_platform_customuser_changelist' %}">{% trans "Users" %}</a></li>
+                            <li><a href="{% url 'admin:auth_group_changelist' %}">{% trans "Groups" %}</a></li>
+                            <li><a href="{% url 'admin:gdpr_platform_role_changelist' %}">{% trans "Roles" %}</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <h6>{% trans "Data Management" %}</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="{% url 'gdpr_platform:data_requests' %}">{% trans "Data Requests" %}</a></li>
+                            <li><a href="{% url 'gdpr_platform:manage_breaches' %}">{% trans "Data Breaches" %}</a></li>
+                            <li><a href="{% url 'admin:gdpr_platform_privacypolicy_changelist' %}">{% trans "Privacy Policies" %}</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <h6>{% trans "Compliance" %}</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="{% url 'admin:gdpr_platform_auditlog_changelist' %}">{% trans "Audit Logs" %}</a></li>
+                            <li><a href="{% url 'gdpr_platform:privacy_settings' %}">{% trans "Consent Records" %}</a></li>
+                            <li><a href="{% url 'gdpr_platform:processing_overview' %}">{% trans "Processing Activities" %}</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <h6>{% trans "System" %}</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="{% url 'admin:index' %}">{% trans "Django Admin Home" %}</a></li>
+                            <li><a href="{% url 'admin:gdpr_platform_systemsettings_changelist' %}">{% trans "System Settings" %}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Refresh dashboard data every 5 minutes
+    setInterval(function() {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %} 

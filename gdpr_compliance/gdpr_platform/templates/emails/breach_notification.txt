@@ -1,0 +1,38 @@
+Dear {{ user.first_name }},
+
+We are writing to inform you about a data breach that was recently discovered at {{ settings.PLATFORM_NAME }}. As required by the General Data Protection Regulation (GDPR), we are notifying you because your personal data may have been affected.
+
+Incident Details:
+- Date of Discovery: {{ breach.date_discovered|date:"F j, Y" }}
+- Type of Breach: {{ breach.get_type_display }}
+- Data Potentially Affected: {{ breach.affected_data_types }}
+
+What We're Doing:
+{{ breach.remediation_steps }}
+
+Steps We've Taken to Protect Your Data:
+{% for step in measures_taken %}
+- {{ step }}
+{% endfor %}
+
+Recommended Actions:
+1. Monitor your accounts for any suspicious activity
+2. Change your passwords
+3. Be vigilant about phishing attempts or suspicious communications
+4. Contact us immediately if you notice any unauthorized activity
+
+Your Rights Under GDPR:
+- Right to request access to your personal data
+- Right to request rectification of your data
+- Right to request erasure of your data
+- Right to lodge a complaint with a supervisory authority
+
+For More Information:
+If you have any questions or concerns, please contact our Data Protection Officer:
+Email: {{ settings.DPO_EMAIL }}
+Phone: {{ settings.DPO_PHONE }}
+
+We take the protection of your personal data very seriously and sincerely apologize for any inconvenience or concern this incident may cause.
+
+Best regards,
+{{ settings.PLATFORM_NAME }} Data Protection Team 

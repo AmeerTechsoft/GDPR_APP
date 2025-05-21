@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="fas fa-laptop me-2"></i>{% trans "Trusted Devices" %}
+                    </h2>
+                    <p class="text-muted">
+                        {% trans "Manage devices that are currently logged into your account." %}
+                    </p>
+                    
+                    <!-- Active Sessions -->
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Device" %}</th>
+                                    <th>{% trans "IP Address" %}</th>
+                                    <th>{% trans "Last Activity" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                    <th>{% trans "Actions" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in active_sessions %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-{% if 'Mobile' in session.user_agent %}mobile{% else %}laptop{% endif %} me-2"></i>
+                                        {{ session.user_agent|truncatechars:30 }}
+                                    </td>
+                                    <td>{{ session.ip_address }}</td>
+                                    <td>{{ session.last_activity|date:"Y-m-d H:i:s" }}</td>
+                                    <td>
+                                        {% if session.session_key == current_session %}
+                                        <span class="badge bg-success">{% trans "Current Session" %}</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{% trans "Active" %}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if session.session_key != current_session %}
+                                        <form method="post" action="{% url 'gdpr_platform:revoke_session' %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="session_key" value="{{ session.session_key }}">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-times me-1"></i>{% trans "Revoke" %}
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        {% trans "No active sessions found." %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Security Tips -->
+                    <div class="alert alert-info mt-4">
+                        <h5 class="alert-heading">{% trans "Security Tips" %}</h5>
+                        <ul class="mb-0">
+                            <li>{% trans "Regularly review your active sessions" %}</li>
+                            <li>{% trans "Revoke access from devices you no longer use" %}</li>
+                            <li>{% trans "Enable two-factor authentication for additional security" %}</li>
+                            <li>{% trans "Report any suspicious activity immediately" %}</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="mt-4">
+                        <form method="post" action="{% url 'gdpr_platform:revoke_all_sessions' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('{% trans "Are you sure you want to log out from all other devices?" %}')">
+                                <i class="fas fa-sign-out-alt me-2"></i>{% trans "Log Out All Other Devices" %}
+                            </button>
+                        </form>
+                        
+                        <a href="{% url 'gdpr_platform:setup_2fa' %}" class="btn btn-primary">
+                            <i class="fas fa-shield-alt me-2"></i>{% trans "Set Up Two-Factor Authentication" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="fas fa-history me-2"></i>{% trans "Activity Log" %}
+                    </h2>
+                    <p class="text-muted">
+                        {% trans "View your account activity and security events." %}
+                    </p>
+                    
+                    <!-- Filters -->
+                    <form method="get" class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="actionType" class="form-label">{% trans "Activity Type" %}</label>
+                                <select class="form-select" id="actionType" name="action_type">
+                                    <option value="">{% trans "All Activities" %}</option>
+                                    {% for action_type, label in action_types %}
+                                    <option value="{{ action_type }}" {% if request.GET.action_type == action_type %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="dateFrom" class="form-label">{% trans "From Date" %}</label>
+                                <input type="date" class="form-control" id="dateFrom" name="date_from"
+                                       value="{{ request.GET.date_from }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="dateTo" class="form-label">{% trans "To Date" %}</label>
+                                <input type="date" class="form-control" id="dateTo" name="date_to"
+                                       value="{{ request.GET.date_to }}">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter me-2"></i>{% trans "Apply Filters" %}
+                                </button>
+                                {% if request.GET %}
+                                <a href="{% url 'gdpr_platform:activity_log' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>{% trans "Clear Filters" %}
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Activity List -->
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Date & Time" %}</th>
+                                    <th>{% trans "Activity" %}</th>
+                                    <th>{% trans "IP Address" %}</th>
+                                    <th>{% trans "Device" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                    <td>
+                                        <i class="fas fa-{{ log.get_icon }} me-2"></i>
+                                        {{ log.get_action_display }}
+                                    </td>
+                                    <td>{{ log.ip_address }}</td>
+                                    <td>{{ log.user_agent }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        {% trans "No activity logs found." %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if logs.has_other_pages %}
+                    <nav aria-label="Activity log pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if logs.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ logs.previous_page_number }}{% if request.GET.action_type %}&action_type={{ request.GET.action_type }}{% endif %}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in logs.paginator.page_range %}
+                            <li class="page-item {% if logs.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}{% if request.GET.action_type %}&action_type={{ request.GET.action_type }}{% endif %}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                            
+                            {% if logs.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ logs.next_page_number }}{% if request.GET.action_type %}&action_type={{ request.GET.action_type }}{% endif %}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load gdpr_filters %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>{% trans "Request Data Deletion" %}
+                    </h2>
+                    <p class="text-muted">
+                        {% trans "Request the deletion of your personal data and account." %}
+                    </p>
+                    
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">{% trans "Important Information" %}</h5>
+                        <p>{% trans "Please read carefully before proceeding:" %}</p>
+                        <ul class="mb-0">
+                            <li>{% trans "This action cannot be undone." %}</li>
+                            <li>{% trans "All your personal data will be permanently deleted after the retention period." %}</li>
+                            <li>{% trans "You will lose access to all services immediately." %}</li>
+                            <li>{% trans "Any active subscriptions will be cancelled." %}</li>
+                            <li>{% trans "Data required for legal compliance may be retained." %}</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="post" action="{% url 'gdpr_platform:data_deletion' %}" id="dataDeletionForm">
+                        {% csrf_token %}
+                        
+                        <!-- Data Categories Selection -->
+                        <div class="mb-4">
+                            <h5>{% trans "Select Data Categories to Delete" %}</h5>
+                            <p class="text-muted small">{% trans "Select which categories of your data you want to delete. Some data may be retained for legal compliance." %}</p>
+                            
+                            {% for category in data_categories %}
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input border border-secondary bg-white" 
+                                       id="category_{{ category.id }}" 
+                                       name="data_categories" 
+                                       value="{{ category.id }}">
+                                <label class="form-check-label text-dark" for="category_{{ category.id }}">
+                                    <strong>{{ category.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ category.description }}</small>
+                                    <br>
+                                    <small class="text-info">
+                                        {% trans "Retention period:" %} 
+                                        {% with retention=retention_policies|get_item:category.id %}
+                                            {% if retention and retention != '' %}
+                                                {{ retention }} {% trans "days" %}
+                                            {% else %}
+                                                {% trans "Standard retention period (30 days) applies" %}
+                                            {% endif %}
+                                        {% endwith %}
+                                    </small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Deletion Reason -->
+                        <div class="mb-3">
+                            <label for="deletion_reason" class="form-label">{% trans "Reason for Deletion (Optional)" %}</label>
+                            <textarea class="form-control" id="deletion_reason" name="deletion_reason" rows="3" 
+                                      placeholder="{% trans 'Please let us know why you want to delete your data.' %}"></textarea>
+                        </div>
+                        
+                        <!-- Immediate Deletion Request -->
+                        {% if can_request_immediate %}
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="immediate_deletion" name="immediate_deletion">
+                                <label class="form-check-label" for="immediate_deletion">
+                                    {% trans "Request immediate deletion" %}
+                                    <br>
+                                    <small class="text-muted">{% trans "If checked, we will attempt to delete your data immediately instead of waiting for the standard retention period." %}</small>
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Final Confirmation -->
+                        <div class="form-check mb-4 mt-4">
+                            <input type="checkbox" class="form-check-input border border-secondary bg-white" id="confirmDeletion" name="confirm_deletion" required>
+                            <label class="form-check-label text-dark" for="confirmDeletion">
+                                {% trans "I understand that this action cannot be undone and I want to proceed with the data deletion request." %}
+                            </label>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="action" value="immediate" class="btn btn-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>{% trans "Request Immediate Deletion" %}
+                            </button>
+                            <button type="submit" name="action" value="scheduled" class="btn btn-warning">
+                                <i class="fas fa-clock me-2"></i>{% trans "Schedule Deletion" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Enable/disable delete buttons based on checkbox and category selection
+    function updateDeleteButtons() {
+        const isConfirmed = $('#confirmDeletion').is(':checked');
+        const hasCategories = $('input[name="data_categories"]:checked').length > 0;
+        $('button[type="submit"]').prop('disabled', !isConfirmed || !hasCategories);
+    }
+
+    $('#confirmDeletion, input[name="data_categories"]').change(updateDeleteButtons);
+    
+    // Handle form submission
+    $('#dataDeletionForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        if ($('input[name="data_categories"]:checked').length === 0) {
+            alert("{% trans 'Please select at least one data category to delete.' %}");
+            return false;
+        }
+        
+        const action = $(document.activeElement).val();
+        const message = action === 'immediate' 
+            ? "{% trans 'Are you absolutely sure you want to proceed with immediate account deletion? This action cannot be undone.' %}"
+            : "{% trans 'Are you sure you want to schedule your account for deletion? This action cannot be undone.' %}";
+            
+        if (!confirm(message)) {
+            return false;
+        }
+        
+        this.submit();
+    });
+
+    // Initial button state
+    updateDeleteButtons();
+});
+</script>
+{% endblock %} 

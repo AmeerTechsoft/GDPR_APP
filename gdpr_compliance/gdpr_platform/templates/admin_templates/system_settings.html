@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "System Settings" %} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">{% trans "System Settings" %}</h1>
+        <button type="button" class="btn btn-primary" id="saveAllSettings">
+            <i class="bi bi-save"></i> {% trans "Save All Changes" %}
+        </button>
+    </div>
+
+    <div class="row">
+        <!-- General Settings -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "General Settings" %}</h5>
+                </div>
+                <div class="card-body">
+                    <form id="generalSettingsForm">
+                        <div class="mb-3">
+                            <label for="platform_name" class="form-label">{% trans "Platform Name" %}</label>
+                            <input type="text" class="form-control" id="platform_name" name="platform_name" value="{{ settings.platform_name }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="support_email" class="form-label">{% trans "Support Email" %}</label>
+                            <input type="email" class="form-control" id="support_email" name="support_email" value="{{ settings.support_email }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="default_language" class="form-label">{% trans "Default Language" %}</label>
+                            <select class="form-select" id="default_language" name="default_language">
+                                {% for code, name in available_languages %}
+                                <option value="{{ code }}" {% if settings.default_language == code %}selected{% endif %}>
+                                    {{ name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="timezone" class="form-label">{% trans "Default Timezone" %}</label>
+                            <select class="form-select" id="timezone" name="timezone">
+                                {% for tz in available_timezones %}
+                                <option value="{{ tz }}" {% if settings.timezone == tz %}selected{% endif %}>
+                                    {{ tz }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "Security Settings" %}</h5>
+                </div>
+                <div class="card-body">
+                    <form id="securitySettingsForm">
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enforce_2fa" name="enforce_2fa" 
+                                       {% if settings.enforce_2fa %}checked{% endif %}>
+                                <label class="form-check-label" for="enforce_2fa">
+                                    {% trans "Enforce Two-Factor Authentication" %}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="session_timeout" class="form-label">{% trans "Session Timeout (minutes)" %}</label>
+                            <input type="number" class="form-control" id="session_timeout" name="session_timeout" 
+                                   value="{{ settings.session_timeout }}" min="5" max="1440">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password_policy" class="form-label">{% trans "Password Policy" %}</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="require_uppercase" name="require_uppercase"
+                                       {% if settings.password_policy.require_uppercase %}checked{% endif %}>
+                                <label class="form-check-label" for="require_uppercase">
+                                    {% trans "Require uppercase letters" %}
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="require_numbers" name="require_numbers"
+                                       {% if settings.password_policy.require_numbers %}checked{% endif %}>
+                                <label class="form-check-label" for="require_numbers">
+                                    {% trans "Require numbers" %}
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="require_special_chars" name="require_special_chars"
+                                       {% if settings.password_policy.require_special_chars %}checked{% endif %}>
+                                <label class="form-check-label" for="require_special_chars">
+                                    {% trans "Require special characters" %}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="min_password_length" class="form-label">{% trans "Minimum Password Length" %}</label>
+                            <input type="number" class="form-control" id="min_password_length" name="min_password_length"
+                                   value="{{ settings.password_policy.min_length }}" min="8" max="32">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Retention -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "Data Retention Settings" %}</h5>
+                </div>
+                <div class="card-body">
+                    <form id="dataRetentionForm">
+                        <div class="mb-3">
+                            <label for="audit_log_retention" class="form-label">{% trans "Audit Log Retention (days)" %}</label>
+                            <input type="number" class="form-control" id="audit_log_retention" name="audit_log_retention"
+                                   value="{{ settings.data_retention.audit_log_days }}" min="30">
+                        </div>
+                        <div class="mb-3">
+                            <label for="backup_retention" class="form-label">{% trans "Backup Retention (days)" %}</label>
+                            <input type="number" class="form-control" id="backup_retention" name="backup_retention"
+                                   value="{{ settings.data_retention.backup_days }}" min="7">
+                        </div>
+                        <div class="mb-3">
+                            <label for="inactive_user_deletion" class="form-label">{% trans "Inactive User Deletion (days)" %}</label>
+                            <input type="number" class="form-control" id="inactive_user_deletion" name="inactive_user_deletion"
+                                   value="{{ settings.data_retention.inactive_user_days }}" min="90">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="auto_anonymize" name="auto_anonymize"
+                                       {% if settings.data_retention.auto_anonymize %}checked{% endif %}>
+                                <label class="form-check-label" for="auto_anonymize">
+                                    {% trans "Automatically Anonymize Deleted Data" %}
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Settings -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{% trans "Email Settings" %}</h5>
+                </div>
+                <div class="card-body">
+                    <form id="emailSettingsForm">
+                        <div class="mb-3">
+                            <label for="smtp_host" class="form-label">{% trans "SMTP Host" %}</label>
+                            <input type="text" class="form-control" id="smtp_host" name="smtp_host"
+                                   value="{{ settings.email.smtp_host }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtp_port" class="form-label">{% trans "SMTP Port" %}</label>
+                            <input type="number" class="form-control" id="smtp_port" name="smtp_port"
+                                   value="{{ settings.email.smtp_port }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtp_user" class="form-label">{% trans "SMTP Username" %}</label>
+                            <input type="text" class="form-control" id="smtp_user" name="smtp_user"
+                                   value="{{ settings.email.smtp_user }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtp_password" class="form-label">{% trans "SMTP Password" %}</label>
+                            <input type="password" class="form-control" id="smtp_password" name="smtp_password"
+                                   value="{{ settings.email.smtp_password }}">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="use_tls" name="use_tls"
+                                       {% if settings.email.use_tls %}checked{% endif %}>
+                                <label class="form-check-label" for="use_tls">
+                                    {% trans "Use TLS" %}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-primary" id="testEmailConnection">
+                                {% trans "Test Connection" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Save all settings
+    document.getElementById('saveAllSettings').addEventListener('click', function() {
+        const forms = [
+            'generalSettingsForm',
+            'securitySettingsForm',
+            'dataRetentionForm',
+            'emailSettingsForm'
+        ];
+
+        const formData = {};
+        forms.forEach(formId => {
+            const form = document.getElementById(formId);
+            const formElements = form.elements;
+            for (let i = 0; i < formElements.length; i++) {
+                const element = formElements[i];
+                if (element.name) {
+                    if (element.type === 'checkbox') {
+                        formData[element.name] = element.checked;
+                    } else {
+                        formData[element.name] = element.value;
+                    }
+                }
+            }
+        });
+
+        // Send settings to server
+        fetch('/gdpr/api/settings/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('{% trans "Settings saved successfully" %}');
+            } else {
+                alert('{% trans "Error saving settings" %}: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('{% trans "Error saving settings" %}: ' + error);
+        });
+    });
+
+    // Test email connection
+    document.getElementById('testEmailConnection').addEventListener('click', function() {
+        const emailSettings = {
+            smtp_host: document.getElementById('smtp_host').value,
+            smtp_port: document.getElementById('smtp_port').value,
+            smtp_user: document.getElementById('smtp_user').value,
+            smtp_password: document.getElementById('smtp_password').value,
+            use_tls: document.getElementById('use_tls').checked
+        };
+
+        fetch('/gdpr/api/settings/test-email/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(emailSettings)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('{% trans "Email connection test successful" %}');
+            } else {
+                alert('{% trans "Email connection test failed" %}: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('{% trans "Email connection test failed" %}: ' + error);
+        });
+    });
+</script>
+{% endblock %} 

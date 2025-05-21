@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Cookie Preferences - GDPR Platform{% endblock %}
+
+{% block page_title %}Cookie Preferences{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6 class="font-weight-bolder mb-0">Cookie Preferences</h6>
+                    <p class="text-sm mb-0">Manage how we use cookies to improve your experience</p>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="cookie-preferences">
+                        {% csrf_token %}
+                        
+                        <!-- Necessary Cookies -->
+                        <div class="cookie-section">
+                            <div class="d-flex align-items-center">
+                                <div class="cookie-section-content">
+                                    <h6>Necessary Cookies</h6>
+                                    <p class="text-sm text-muted">
+                                        These cookies are essential for the website to function properly
+                                    </p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" checked disabled>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Analytics Cookies -->
+                        <div class="cookie-section">
+                            <div class="d-flex align-items-center">
+                                <div class="cookie-section-content">
+                                    <h6>Analytics Cookies</h6>
+                                    <p class="text-sm text-muted">
+                                        Help us understand how visitors interact with our website
+                                    </p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    {{ form.analytics_cookies }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Marketing Cookies -->
+                        <div class="cookie-section">
+                            <div class="d-flex align-items-center">
+                                <div class="cookie-section-content">
+                                    <h6>Marketing Cookies</h6>
+                                    <p class="text-sm text-muted">
+                                        Used to deliver advertisements more relevant to you
+                                    </p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    {{ form.marketing_cookies }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Functional Cookies -->
+                        <div class="cookie-section">
+                            <div class="d-flex align-items-center">
+                                <div class="cookie-section-content">
+                                    <h6>Functional Cookies</h6>
+                                    <p class="text-sm text-muted">
+                                        Enable enhanced functionality and personalization
+                                    </p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    {{ form.functional_cookies }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <button type="button" class="btn bg-gradient-dark" onclick="selectAllCookies()">
+                                Accept All
+                            </button>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary me-2" onclick="rejectAllCookies()">
+                                    Reject All
+                                </button>
+                                <button type="submit" class="btn bg-gradient-primary">
+                                    Save Preferences
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cookie Information -->
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6 class="font-weight-bolder mb-0">About Cookies</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-body text-xs font-weight-bolder">What are cookies?</h6>
+                            <p class="text-sm mb-4">
+                                Cookies are small text files that are placed on your device when you visit a website. 
+                                They are widely used to make websites work more efficiently and provide information to 
+                                the website owners.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-body text-xs font-weight-bolder">How do we use cookies?</h6>
+                            <p class="text-sm mb-4">
+                                We use cookies to understand how visitors use our website, to remember your preferences, 
+                                and to improve your experience. Some cookies are essential for the website to function 
+                                properly.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectAllCookies() {
+    document.querySelectorAll('input[type="checkbox"]:not([disabled])').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+
+function rejectAllCookies() {
+    document.querySelectorAll('input[type="checkbox"]:not([disabled])').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+
+// Save user's scroll position before form submission
+document.querySelector('form').addEventListener('submit', function() {
+    sessionStorage.setItem('scrollPosition', window.scrollY);
+});
+
+// Restore scroll position after page reload
+document.addEventListener('DOMContentLoaded', function() {
+    const scrollPosition = sessionStorage.getItem('scrollPosition');
+    if (scrollPosition) {
+        window.scrollTo(0, parseInt(scrollPosition));
+        sessionStorage.removeItem('scrollPosition');
+    }
+});
+</script>
+{% endblock %} 
