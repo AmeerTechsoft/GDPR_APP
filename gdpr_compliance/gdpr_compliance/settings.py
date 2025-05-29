@@ -34,7 +34,7 @@ ENCRYPTION_KEY = b'iiIRXC_GLKZm35YH6ADmmmkvpoZA368SnpTf98wLZN4='
 SECRET_KEY = 'your-secret-key-here'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -205,7 +205,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Security Settings
-DEBUG = True  # Set to False in production
+DEBUG = False  # Set to False in production
 
 # Only enable HTTPS redirect and secure cookies in production
 if not DEBUG:
