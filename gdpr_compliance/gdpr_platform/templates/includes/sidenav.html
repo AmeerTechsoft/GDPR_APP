@@ -230,44 +230,6 @@
             {% endif %}
             {% endwith %}
 
-            <!-- Common Sections for all users -->
-            <li class="nav-item">
-                <a class="nav-link {% if 'security' in request.resolver_match.url_name or '2fa' in request.resolver_match.url_name or 'trusted_devices' in request.resolver_match.url_name %}active{% endif %}" 
-                   href="#" data-bs-toggle="collapse" data-bs-target="#securityCollapse"
-                   aria-expanded="{% if 'security' in request.resolver_match.url_name or '2fa' in request.resolver_match.url_name or 'trusted_devices' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
-                    <i class="fas fa-lock"></i>
-                    <span class="nav-link-text">{% trans "Security" %}</span>
-                </a>
-                <div class="collapse {% if 'security' in request.resolver_match.url_name or '2fa' in request.resolver_match.url_name or 'trusted_devices' in request.resolver_match.url_name %}show{% endif %}" id="securityCollapse">
-                    <ul class="nav ms-4">
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'security_dashboard' %}active{% endif %}" href="{% url 'gdpr_platform:security_dashboard' %}">
-                                <i class="fas fa-shield-alt"></i>
-                                <span class="nav-link-text">{% trans "Security Overview" %}</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'setup_2fa' %}active{% endif %}" href="{% url 'gdpr_platform:setup_2fa' %}">
-                                <i class="fas fa-key"></i>
-                                <span class="nav-link-text">{% trans "Two-Factor Auth" %}</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'trusted_devices' %}active{% endif %}" href="{% url 'gdpr_platform:trusted_devices' %}">
-                                <i class="fas fa-mobile-alt"></i>
-                                <span class="nav-link-text">{% trans "Trusted Devices" %}</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'update_cookie_consent' %}active{% endif %}" href="{% url 'gdpr_platform:update_cookie_consent' %}">
-                                <i class="fas fa-cookie"></i>
-                                <span class="nav-link-text">{% trans "Cookie Settings" %}</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-
             <li class="nav-item">
                 <a class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'gdpr_platform:settings' %}">
                     <i class="fas fa-user-cog"></i>

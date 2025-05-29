@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">{% trans "Security Overview" %}</h2>
+        </div>
+    </div>
+
+    <!-- Security Status -->
+    <div class="row g-4 mb-4">
+        <!-- Two-Factor Authentication -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Two-Factor Authentication" %}</h5>
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            {% if two_factor_enabled %}
+                                <span class="badge bg-success">{% trans "Enabled" %}</span>
+                            {% else %}
+                                <span class="badge bg-warning">{% trans "Disabled" %}</span>
+                            {% endif %}
+                        </div>
+                        <div class="ms-3">
+                            {% if two_factor_enabled %}
+                                <a href="{% url 'gdpr_platform:disable_2fa' %}" class="btn btn-sm btn-outline-danger">
+                                    {% trans "Disable" %}
+                                </a>
+                            {% else %}
+                                <a href="{% url 'gdpr_platform:setup_2fa' %}" class="btn btn-sm btn-primary">
+                                    {% trans "Enable" %}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Status -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Password Status" %}</h5>
+                    {% if last_password_change %}
+                        <p class="mb-1">{% trans "Last changed" %}: {{ last_password_change|date:"SHORT_DATE_FORMAT" }}</p>
+                    {% endif %}
+                    {% if password_expiry_date %}
+                        <p class="mb-0">{% trans "Expires" %}: {{ password_expiry_date|date:"SHORT_DATE_FORMAT" }}</p>
+                    {% endif %}
+                    <a href="{% url 'gdpr_platform:password_change' %}" class="btn btn-sm btn-primary mt-2">
+                        {% trans "Change Password" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Active Sessions" %}</h5>
+                    <p class="mb-2">{{ active_sessions.count }} {% trans "active sessions" %}</p>
+                    <a href="{% url 'gdpr_platform:trusted_devices' %}" class="btn btn-sm btn-primary">
+                        {% trans "Manage Sessions" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trusted Devices -->
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Trusted Devices" %}</h5>
+                    <p class="mb-2">{{ trusted_devices.count }} {% trans "trusted devices" %}</p>
+                    <a href="{% url 'gdpr_platform:trusted_devices' %}" class="btn btn-sm btn-primary">
+                        {% trans "Manage Devices" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans "Recent Security Activity" %}</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Date" %}</th>
+                                <th>{% trans "Activity" %}</th>
+                                <th>{% trans "IP Address" %}</th>
+                                <th>{% trans "Status" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in security_logs %}
+                                <tr>
+                                    <td>{{ log.timestamp|date:"SHORT_DATETIME_FORMAT" }}</td>
+                                    <td>{{ log.description }}</td>
+                                    <td>{{ log.ip_address }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ log.get_status_color }}">
+                                            {{ log.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">{% trans "No recent security activity" %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

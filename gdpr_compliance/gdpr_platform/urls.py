@@ -72,10 +72,13 @@ urlpatterns = [
     path('privacy/policy/manage/', views.manage_privacy_policy, name='manage_privacy_policy'),
     
     # Security URLs
-    path('security/', views.security_dashboard, name='security_dashboard'),
-    path('security/devices/revoke/', views.revoke_session, name='revoke_session'),
-    path('security/devices/revoke-all/', views.revoke_all_sessions, name='revoke_all_sessions'),
-    path('security/sessions/terminate/', views.terminate_session, name='terminate_session'),
+    path('security/overview/', views.security_overview, name='security_overview'),
+    path('security/2fa/', views.two_factor_auth, name='two_factor_auth'),
+    path('security/devices/', views.trusted_devices, name='trusted_devices'),
+    path('security/devices/remove/<int:device_id>/', views.remove_trusted_device, name='remove_trusted_device'),
+    path('security/sessions/terminate/<int:session_id>/', views.terminate_session, name='terminate_session'),
+    path('security/sessions/terminate-all/', views.terminate_all_sessions, name='terminate_all_sessions'),
+    path('security/settings/', views.security_settings, name='security_settings'),
 
     # Admin Dashboard URLs
     path('admin/users/', views.user_management, name='user_management'),
@@ -88,7 +91,7 @@ urlpatterns = [
     path('breaches/', views.manage_breaches, name='manage_breaches'),
     path('breaches/<uuid:breach_id>/', views.breach_details, name='breach_details'),
     path('breaches/notifications/', views.data_breach_notifications, name='breach_notifications'),
-    path('breaches/acknowledge/<int:notification_id>/', views.acknowledge_breach, name='acknowledge_breach'),
+    path('breaches/acknowledge/<uuid:notification_id>/', views.acknowledge_breach, name='acknowledge_breach'),
     path('processing/overview/', views.processing_overview, name='processing_overview'),
     path('processing/activities/', views.processing_activities, name='processing_activities'),
     path('compliance/reports/', views.compliance_reports, name='compliance_reports'),

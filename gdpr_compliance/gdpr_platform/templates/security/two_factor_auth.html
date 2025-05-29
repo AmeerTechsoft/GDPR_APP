@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ title }} | GDPR Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">{% trans "Two-Factor Authentication" %}</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    {% if two_factor_enabled %}
+                        <h5 class="card-title">{% trans "Two-Factor Authentication is Enabled" %}</h5>
+                        <p class="text-success">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            {% trans "Your account is protected with two-factor authentication." %}
+                        </p>
+                        
+                        <!-- Backup Codes Section -->
+                        {% if backup_codes %}
+                            <div class="mt-4">
+                                <h6>{% trans "Backup Codes" %}</h6>
+                                <p class="text-muted">
+                                    {% trans "Keep these backup codes in a safe place. You can use them to access your account if you lose your authenticator device." %}
+                                </p>
+                                <div class="alert alert-warning">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{% trans "Important" %}:</strong>
+                                            {% trans "These codes will only be shown once. Make sure to save them somewhere safe." %}
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="window.print()">
+                                            <i class="fas fa-print me-1"></i> {% trans "Print" %}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    {% for code in backup_codes %}
+                                        <div class="col-md-4">
+                                            <code class="d-block p-2 bg-light text-center">{{ code }}</code>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mt-4">
+                            <a href="{% url 'gdpr_platform:disable_2fa' %}" class="btn btn-danger">
+                                <i class="fas fa-times-circle me-1"></i> {% trans "Disable 2FA" %}
+                            </a>
+                        </div>
+                    {% else %}
+                        <h5 class="card-title">{% trans "Enable Two-Factor Authentication" %}</h5>
+                        <p class="text-muted">
+                            {% trans "Two-factor authentication adds an extra layer of security to your account. You'll need to enter a code from your authenticator app in addition to your password when signing in." %}
+                        </p>
+                        
+                        {% if qr_code %}
+                            <div class="mt-4">
+                                <h6>{% trans "Step 1: Scan QR Code" %}</h6>
+                                <p>{% trans "Scan this QR code with your authenticator app:" %}</p>
+                                <div class="text-center">
+                                    <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="img-fluid" style="max-width: 200px;">
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h6>{% trans "Step 2: Enter Verification Code" %}</h6>
+                                <form method="post" action="{% url 'gdpr_platform:verify_2fa' %}" class="mt-3">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="verification_code" class="form-label">{% trans "Enter the 6-digit code from your authenticator app" %}</label>
+                                        <input type="text" class="form-control" id="verification_code" name="verification_code" 
+                                               pattern="[0-9]{6}" maxlength="6" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-check-circle me-1"></i> {% trans "Verify and Enable" %}
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Security Tips" %}</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-shield-alt text-primary me-2"></i>
+                            {% trans "Use an authenticator app like Google Authenticator or Authy" %}
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-key text-primary me-2"></i>
+                            {% trans "Keep your backup codes in a secure location" %}
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-mobile-alt text-primary me-2"></i>
+                            {% trans "Don't share your authenticator codes with anyone" %}
+                        </li>
+                        <li>
+                            <i class="fas fa-sync text-primary me-2"></i>
+                            {% trans "Regularly review your trusted devices" %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

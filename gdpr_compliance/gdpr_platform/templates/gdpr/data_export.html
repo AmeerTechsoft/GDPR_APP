@@ -3,6 +3,8 @@
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block page_title %}{% trans "Export Your Data" %}{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="row">
@@ -13,25 +15,100 @@
                         <i class="fas fa-download me-2"></i>{% trans "Export Your Data" %}
                     </h2>
                     <p class="text-muted">
-                        {% trans "Download a copy of your personal data in CSV format." %}
+                        {% trans "Download a copy of your personal data in your preferred format." %}
                     </p>
                     
-                    <div class="alert alert-info">
+                    <div class="alert alert-info mb-4">
                         <h5 class="alert-heading">{% trans "What's included in the export?" %}</h5>
-                        <ul class="mb-0">
-                            <li>{% trans "Personal information (name, email, etc.)" %}</li>
-                            <li>{% trans "Privacy settings and preferences" %}</li>
-                            <li>{% trans "Marketing preferences" %}</li>
-                            <li>{% trans "Data retention policies" %}</li>
-                        </ul>
+                        <p class="mb-0">{% trans "Select the categories of data you would like to export:" %}</p>
                     </div>
                     
                     <form method="post" action="{% url 'gdpr_platform:data_export' %}">
                         {% csrf_token %}
                         
+                        <!-- Data Categories -->
+                        <div class="mb-4">
+                            <h6>{% trans "Data Categories" %}</h6>
+                            {% for category in categories %}
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="category_{{ category.id }}" 
+                                       name="categories" value="{{ category.id }}" checked>
+                                <label class="form-check-label" for="category_{{ category.id }}">
+                                    <strong>{{ category.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ category.description }}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Export Format -->
+                        <div class="mb-4">
+                            <h6>{% trans "Export Format" %}</h6>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="format" id="format_json" 
+                                       value="json" checked>
+                                <label class="btn btn-outline-primary" for="format_json" data-bs-toggle="tooltip" 
+                                       title="{% trans 'Best for data analysis and integration with other systems' %}">
+                                    JSON
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="format" id="format_csv" 
+                                       value="csv">
+                                <label class="btn btn-outline-primary" for="format_csv" data-bs-toggle="tooltip" 
+                                       title="{% trans 'Best for spreadsheet applications like Excel' %}">
+                                    CSV
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="format" id="format_xml" 
+                                       value="xml">
+                                <label class="btn btn-outline-primary" for="format_xml" data-bs-toggle="tooltip" 
+                                       title="{% trans 'Best for structured data and legacy systems' %}">
+                                    XML
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Previous Exports -->
+                        {% if previous_exports %}
+                        <div class="mb-4">
+                            <h6>{% trans "Previous Exports" %}</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Date" %}</th>
+                                            <th>{% trans "Format" %}</th>
+                                            <th>{% trans "Status" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for export in previous_exports %}
+                                        <tr>
+                                            <td>{{ export.request_date|date:"SHORT_DATETIME_FORMAT" }}</td>
+                                            <td>{{ export.file_format|upper }}</td>
+                                            <td>
+                                                {% if export.status == 'completed' %}
+                                                    <span class="badge bg-success">{{ export.status|title }}</span>
+                                                {% elif export.status == 'processing' %}
+                                                    <span class="badge bg-warning">{{ export.status|title }}</span>
+                                                {% elif export.status == 'failed' %}
+                                                    <span class="badge bg-danger">{{ export.status|title }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ export.status|title }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
                         <div class="form-check mb-3">
                             <input type="checkbox" class="form-check-input" id="confirmExport" required>
-                            <label class="form-check-label" for="confirmExport">
+                            <label class="form-check-label text-dark" for="confirmExport">
                                 {% trans "I confirm that I want to export my personal data" %}
                             </label>
                         </div>
@@ -49,10 +126,21 @@
 
 {% block extra_js %}
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Enable/disable export button based on checkbox
-    $('#confirmExport').change(function() {
-        $('#exportButton').prop('disabled', !this.checked);
+    const confirmCheckbox = document.getElementById('confirmExport');
+    const exportButton = document.getElementById('exportButton');
+    
+    if (confirmCheckbox && exportButton) {
+        confirmCheckbox.addEventListener('change', function() {
+            exportButton.disabled = !this.checked;
+        });
+    }
+    
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
 </script>

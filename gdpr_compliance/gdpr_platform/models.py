@@ -537,6 +537,14 @@ class SystemSettings(models.Model):
     def __str__(self):
         return f"{self.category} - {self.key}"
 
+    @classmethod
+    def get_settings(cls):
+        """Get all system settings as a dictionary."""
+        settings_dict = {}
+        for setting in cls.objects.all():
+            settings_dict[setting.key] = setting.get_value()
+        return settings_dict
+
     def save(self, *args, **kwargs):
         if self.is_encrypted and not isinstance(self.value, str):
             # Encrypt the value if it's marked as encrypted
@@ -1688,6 +1696,7 @@ class DeletionTask(models.Model):
 
 class BreachNotification(models.Model):
     """Model for tracking breach notifications sent to users"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     breach = models.ForeignKey(DataBreach, on_delete=models.CASCADE)
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=[

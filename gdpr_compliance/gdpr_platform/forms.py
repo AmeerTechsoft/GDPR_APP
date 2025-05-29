@@ -18,6 +18,9 @@ from typing import Any, Dict, Optional
 from django.forms import ValidationError as DjangoValidationError
 from .models import DataRequest, CrossBorderTransfer
 
+# Initialize mimetypes
+mimetypes.init()
+
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
@@ -206,18 +209,6 @@ class RegistrationForm(BaseModelForm, UserCreationForm):
         })
     )
     
-    profile_photo = forms.ImageField(
-        required=False,
-        validators=[
-            FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png']),
-        ],
-        widget=forms.FileInput(attrs={
-            'class': 'form-control',
-            'accept': 'image/jpeg,image/png'
-        }),
-        help_text=_("Maximum file size: 5MB. Supported formats: JPEG, PNG")
-    )
-    
     privacy_policy_consent = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -246,7 +237,7 @@ class RegistrationForm(BaseModelForm, UserCreationForm):
             'first_name', 'last_name', 'phone_number',
             'date_of_birth', 'address', 'city', 'country',
             'postal_code', 'nationality', 'occupation',
-            'company', 'preferred_language', 'profile_photo',
+            'company', 'preferred_language',
             'privacy_policy_consent', 'data_processing_consent',
             'marketing_consent'
         )
@@ -316,59 +307,6 @@ class RegistrationForm(BaseModelForm, UserCreationForm):
             raise DjangoValidationError(_("Please use a valid email address. Disposable email providers are not allowed."))
         
         return email
-
-    def clean_profile_photo(self) -> Optional[Any]:
-        photo = self.cleaned_data.get('profile_photo')
-        if photo:
-            # Check file size
-            max_size = getattr(settings, 'MAX_UPLOAD_SIZE', 5 * 1024 * 1024)  # Default 5MB
-            if photo.size > max_size:
-                raise DjangoValidationError(_("Image file too large (> %(size)s MB)") % {'size': max_size / (1024 * 1024)})
-            
-            try:
-                # Use mimetypes for file type detection
-                mime_type, _ = mimetypes.guess_type(photo.name)
-                if not mime_type:
-                    raise DjangoValidationError(_("Could not determine file type. Please upload a valid JPEG or PNG file."))
-                
-                allowed_types = ['image/jpeg', 'image/png']
-                if mime_type not in allowed_types:
-                    raise DjangoValidationError(_("Invalid file type. Only JPEG and PNG images are allowed."))
-                
-                # Additional security check for file extension
-                file_extension = os.path.splitext(photo.name)[1].lower()
-                allowed_extensions = ['.jpg', '.jpeg', '.png']
-                if file_extension not in allowed_extensions:
-                    raise DjangoValidationError(_("Invalid file extension. Only .jpg, .jpeg, and .png files are allowed."))
-                
-                # Verify image dimensions
-                try:
-                    with Image.open(photo) as img:
-                        # Check maximum dimensions
-                        max_dimension = getattr(settings, 'MAX_IMAGE_DIMENSION', 2000)
-                        if img.width > max_dimension or img.height > max_dimension:
-                            raise DjangoValidationError(_(
-                                "Image dimensions too large. Maximum allowed dimension is %(max_dim)s pixels"
-                            ) % {'max_dim': max_dimension})
-                        
-                        # Check minimum dimensions
-                        min_dimension = getattr(settings, 'MIN_IMAGE_DIMENSION', 100)
-                        if img.width < min_dimension or img.height < min_dimension:
-                            raise DjangoValidationError(_(
-                                "Image dimensions too small. Minimum allowed dimension is %(min_dim)s pixels"
-                            ) % {'min_dim': min_dimension})
-                        
-                        # Verify it's actually an image
-                        img.verify()
-                        
-                except Exception as e:
-                    raise DjangoValidationError(_("Invalid image file. Please upload a valid JPEG or PNG file."))
-                
-            except Exception as e:
-                logger.error(f"Error validating profile photo: {str(e)}")
-                raise DjangoValidationError(_("Error verifying file type. Please try again."))
-        
-        return photo
 
     def clean_date_of_birth(self) -> Optional[date]:
         dob = self.cleaned_data.get('date_of_birth')

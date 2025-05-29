@@ -23,22 +23,103 @@
                         <div class="mb-4">
                             <h5>{% trans "Personal Information" %}</h5>
                             
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="firstName" class="form-label">{% trans "First Name" %}</label>
+                                    <input type="text" class="form-control" id="firstName" name="first_name"
+                                           value="{{ user.first_name }}" required>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="lastName" class="form-label">{% trans "Last Name" %}</label>
+                                    <input type="text" class="form-control" id="lastName" name="last_name"
+                                           value="{{ user.last_name }}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">{% trans "Email Address" %}</label>
+                                    <input type="email" class="form-control" id="email" name="email"
+                                           value="{{ user.email }}" required>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="phoneNumber" class="form-label">{% trans "Phone Number" %}</label>
+                                    <input type="tel" class="form-control" id="phoneNumber" name="phone_number"
+                                           value="{{ user.phone_number }}" placeholder="+1234567890">
+                                    <small class="text-muted">{% trans "Format: +1234567890" %}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="dateOfBirth" class="form-label">{% trans "Date of Birth" %}</label>
+                                    <input type="date" class="form-control" id="dateOfBirth" name="date_of_birth"
+                                           value="{{ user.date_of_birth|date:'Y-m-d' }}">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="nationality" class="form-label">{% trans "Nationality" %}</label>
+                                    <input type="text" class="form-control" id="nationality" name="nationality"
+                                           value="{{ user.nationality }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Contact Information -->
+                        <div class="mb-4">
+                            <h5>{% trans "Contact Information" %}</h5>
+                            
                             <div class="mb-3">
-                                <label for="firstName" class="form-label">{% trans "First Name" %}</label>
-                                <input type="text" class="form-control" id="firstName" name="first_name"
-                                       value="{{ request.user.first_name }}" required>
+                                <label for="address" class="form-label">{% trans "Address" %}</label>
+                                <input type="text" class="form-control" id="address" name="address"
+                                       value="{{ user.address }}" placeholder="{% trans 'Enter your address' %}">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="city" class="form-label">{% trans "City" %}</label>
+                                    <input type="text" class="form-control" id="city" name="city"
+                                           value="{{ user.city }}">
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="country" class="form-label">{% trans "Country" %}</label>
+                                    <input type="text" class="form-control" id="country" name="country"
+                                           value="{{ user.country }}">
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="postalCode" class="form-label">{% trans "Postal Code" %}</label>
+                                    <input type="text" class="form-control" id="postalCode" name="postal_code"
+                                           value="{{ user.postal_code }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Professional Information -->
+                        <div class="mb-4">
+                            <h5>{% trans "Professional Information" %}</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="occupation" class="form-label">{% trans "Occupation" %}</label>
+                                    <input type="text" class="form-control" id="occupation" name="occupation"
+                                           value="{{ user.occupation }}">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="company" class="form-label">{% trans "Company" %}</label>
+                                    <input type="text" class="form-control" id="company" name="company"
+                                           value="{{ user.company }}">
+                                </div>
                             </div>
                             
                             <div class="mb-3">
-                                <label for="lastName" class="form-label">{% trans "Last Name" %}</label>
-                                <input type="text" class="form-control" id="lastName" name="last_name"
-                                       value="{{ request.user.last_name }}" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="email" class="form-label">{% trans "Email Address" %}</label>
-                                <input type="email" class="form-control" id="email" name="email"
-                                       value="{{ request.user.email }}" required>
+                                <label for="preferredLanguage" class="form-label">{% trans "Preferred Language" %}</label>
+                                <input type="text" class="form-control" id="preferredLanguage" name="preferred_language"
+                                       value="{{ user.preferred_language }}">
                             </div>
                         </div>
                         

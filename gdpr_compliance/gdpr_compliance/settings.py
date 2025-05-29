@@ -16,6 +16,7 @@ from django.contrib.messages import constants as messages
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 import base64
+from django.utils.translation import gettext_lazy as _
 
 # Load environment variables from .env file
 load_dotenv()
@@ -58,6 +59,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -124,13 +126,37 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
 
+# Available languages
+LANGUAGES = [
+    ('en', _('English')),
+    ('fr', _('French')),
+    ('de', _('German')),
+    ('es', _('Spanish')),
+    ('it', _('Italian')),
+    ('nl', _('Dutch')),
+    ('pl', _('Polish')),
+    ('pt', _('Portuguese')),
+    ('ru', _('Russian')),
+    ('ar', _('Arabic')),
+]
+
+# Language detection settings
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+
+# Language cookie settings
+LANGUAGE_COOKIE_NAME = 'django_language'
+LANGUAGE_COOKIE_AGE = 365 * 24 * 60 * 60  # 1 year
+LANGUAGE_COOKIE_DOMAIN = None
+LANGUAGE_COOKIE_SECURE = True
+LANGUAGE_COOKIE_HTTPONLY = True
+LANGUAGE_COOKIE_SAMESITE = 'Lax'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

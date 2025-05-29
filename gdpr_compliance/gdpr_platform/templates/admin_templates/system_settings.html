@@ -6,6 +6,7 @@
 
 {% block content %}
 <div class="container-fluid py-4">
+    {% csrf_token %}
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3">{% trans "System Settings" %}</h1>
@@ -201,82 +202,147 @@
 
 {% block extra_js %}
 <script>
-    // Save all settings
-    document.getElementById('saveAllSettings').addEventListener('click', function() {
-        const forms = [
-            'generalSettingsForm',
-            'securitySettingsForm',
-            'dataRetentionForm',
-            'emailSettingsForm'
-        ];
-
-        const formData = {};
-        forms.forEach(formId => {
-            const form = document.getElementById(formId);
-            const formElements = form.elements;
-            for (let i = 0; i < formElements.length; i++) {
-                const element = formElements[i];
-                if (element.name) {
-                    if (element.type === 'checkbox') {
-                        formData[element.name] = element.checked;
-                    } else {
-                        formData[element.name] = element.value;
-                    }
+document.addEventListener('DOMContentLoaded', function() {
+    const saveButton = document.getElementById('saveAllSettings');
+    
+    saveButton.addEventListener('click', function() {
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Collect all form data
+        const generalForm = document.getElementById('generalSettingsForm');
+        const securityForm = document.getElementById('securitySettingsForm');
+        const dataRetentionForm = document.getElementById('dataRetentionForm');
+        const emailForm = document.getElementById('emailSettingsForm');
+        
+        // Create FormData objects
+        const formData = new FormData();
+        
+        // Add general settings
+        for (let element of generalForm.elements) {
+            if (element.name) {
+                if (element.type === 'checkbox') {
+                    formData.append(element.name, element.checked);
+                } else {
+                    formData.append(element.name, element.value);
                 }
             }
-        });
-
-        // Send settings to server
-        fetch('/gdpr/api/settings/', {
+        }
+        
+        // Add security settings
+        for (let element of securityForm.elements) {
+            if (element.name) {
+                if (element.type === 'checkbox') {
+                    formData.append(element.name, element.checked);
+                } else {
+                    formData.append(element.name, element.value);
+                }
+            }
+        }
+        
+        // Add data retention settings
+        for (let element of dataRetentionForm.elements) {
+            if (element.name) {
+                if (element.type === 'checkbox') {
+                    formData.append(element.name, element.checked);
+                } else {
+                    formData.append(element.name, element.value);
+                }
+            }
+        }
+        
+        // Add email settings
+        for (let element of emailForm.elements) {
+            if (element.name) {
+                if (element.type === 'checkbox') {
+                    formData.append(element.name, element.checked);
+                } else {
+                    formData.append(element.name, element.value);
+                }
+            }
+        }
+        
+        // Add CSRF token
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        
+        // Send the request
+        fetch('{% url "gdpr_platform:system_settings" %}', {
             method: 'POST',
+            body: formData,
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: JSON.stringify(formData)
+                'X-CSRFToken': csrfToken
+            }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('{% trans "Settings saved successfully" %}');
+                // Show success message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    {% trans "Settings saved successfully" %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
+                
+                // Remove alert after 5 seconds
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
             } else {
-                alert('{% trans "Error saving settings" %}: ' + data.error);
+                // Show error message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    ${data.error || '{% trans "An error occurred while saving settings" %}'}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
             }
         })
         .catch(error => {
-            alert('{% trans "Error saving settings" %}: ' + error);
+            console.error('Error:', error);
+            // Show error message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                {% trans "An error occurred while saving settings" %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
         });
     });
+});
 
-    // Test email connection
-    document.getElementById('testEmailConnection').addEventListener('click', function() {
-        const emailSettings = {
-            smtp_host: document.getElementById('smtp_host').value,
-            smtp_port: document.getElementById('smtp_port').value,
-            smtp_user: document.getElementById('smtp_user').value,
-            smtp_password: document.getElementById('smtp_password').value,
-            use_tls: document.getElementById('use_tls').checked
-        };
+// Test email connection
+document.getElementById('testEmailConnection').addEventListener('click', function() {
+    const emailSettings = {
+        smtp_host: document.getElementById('smtp_host').value,
+        smtp_port: document.getElementById('smtp_port').value,
+        smtp_user: document.getElementById('smtp_user').value,
+        smtp_password: document.getElementById('smtp_password').value,
+        use_tls: document.getElementById('use_tls').checked
+    };
 
-        fetch('/gdpr/api/settings/test-email/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: JSON.stringify(emailSettings)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('{% trans "Email connection test successful" %}');
-            } else {
-                alert('{% trans "Email connection test failed" %}: ' + data.error);
-            }
-        })
-        .catch(error => {
-            alert('{% trans "Email connection test failed" %}: ' + error);
-        });
+    fetch('/gdpr/api/settings/test-email/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify(emailSettings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('{% trans "Email connection test successful" %}');
+        } else {
+            alert('{% trans "Email connection test failed" %}: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('{% trans "Email connection test failed" %}: ' + error);
     });
+});
 </script>
 {% endblock %} 

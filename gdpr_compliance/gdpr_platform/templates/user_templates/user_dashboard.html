@@ -197,16 +197,17 @@
                         <h5 class="mb-0">
                             <i class="fas fa-exclamation-triangle me-2"></i>
                             {% trans "Data Breach Notifications" %}
-                            </h5>
+                        </h5>
                     </div>
                     <div class="list-group list-group-flush">
-                                {% for notification in breach_notifications %}
-                                <div class="list-group-item">
-                                        <h6 class="mb-1">{{ notification.breach.title }}</h6>
+                        {% for notification in breach_notifications %}
+                            {% if notification.id %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">{{ notification.breach.title }}</h6>
                                 <p class="mb-1 small">{{ notification.breach.description }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <small class="text-muted">
-                                        {{ notification.notified_at|date:"SHORT_DATETIME_FORMAT" }}
+                                        {{ notification.created_at|date:"SHORT_DATETIME_FORMAT" }}
                                     </small>
                                     <button class="btn btn-sm btn-outline-danger" 
                                             onclick="acknowledgeBreachNotification('{{ notification.id }}')">
@@ -214,10 +215,11 @@
                                     </button>
                                 </div>
                             </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 </div>
-                {% endif %}
+            {% endif %}
 
             <!-- Active Sessions -->
             <div class="card mb-4">
@@ -281,8 +283,13 @@
 <script>
 // Acknowledge breach notification
 function acknowledgeBreachNotification(notificationId) {
+    if (!notificationId) {
+        console.error('Invalid notification ID');
+        return;
+    }
+    
     if (confirm('{% trans "Are you sure you want to acknowledge this notification?" %}')) {
-        fetch(`{% url 'gdpr_platform:acknowledge_breach' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', notificationId), {
+        fetch(`{% url 'gdpr_platform:acknowledge_breach' notification_id='00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', notificationId), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -292,9 +299,14 @@ function acknowledgeBreachNotification(notificationId) {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                    location.reload();
-                }
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                console.error('Error acknowledging notification:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
         });
     }
 }
